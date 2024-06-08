@@ -36,7 +36,7 @@ const createSendToken = (user, statusCode, res) => {
   // Remove password from output
   user.password = undefined;
 
-  res.status(statusCode).json({
+  res.status(201).json({
     status: "success",
     token,
     data: {
@@ -172,7 +172,7 @@ exports.uploadSellerProfileImage = catchAsync(async (req, res, next) => {
       if (result) {
         await Seller.findByIdAndUpdate(id, { image: result.url });
         const userInfo = await Seller.findById(id);
-        res.status(statusCode).json({
+        res.status(200).json({
           status: "Image Uploaded",
           data: {
             userInfo,

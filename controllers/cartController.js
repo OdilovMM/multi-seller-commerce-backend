@@ -30,7 +30,7 @@ exports.addProductToCart = catchAsync(async (req, res, next) => {
         productId,
         quantity,
       });
-      res.status(statusCode).json({
+      res.status(201).json({
         status: "Product Added",
         token,
         data: {
