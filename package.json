@@ -4,11 +4,12 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
-  "author": "",
+  "author": "Odilov M X",
   "license": "MIT",
-  "description": "",
+  "description": "Multi Vendor e-commerce backend",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
