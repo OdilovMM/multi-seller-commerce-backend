@@ -36,7 +36,7 @@ app.use(morgan("dev"));
 
 // Limit requests from same API
 // const limiter = rateLimit({
-//   max: 100,
+//   max: 10000,
 //   windowMs: 60 * 60 * 1000,
 //   message: "Too many requests from this IP, please try again in an hour!",
 // });
@@ -50,9 +50,9 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: [
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "http://localhost:5175",
+      "https://my-shop-ecommerce-nine.vercel.app", //front end
+      "https://seller-dashboard-iota.vercel.app", //seller
+      "https://admin-dashboard-seven-rust-17.vercel.app", // admin dashboard
     ],
     credentials: true,
   })

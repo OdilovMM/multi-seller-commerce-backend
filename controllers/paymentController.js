@@ -27,8 +27,8 @@ exports.createSellerStripeAccount = catchAsync(async (req, res, next) => {
       const account = await stripe.accounts.create({ type: "express" });
       const accountLink = await stripe.accountLinks.create({
         account: account.id,
-        refresh_url: `http://localhost:5174/refresh`,
-        return_url: `http://localhost:5174/success?activeCode=${uniqueId}`,
+        refresh_url: `https://seller-dashboard-iota.vercel.app/refresh`,
+        return_url: `https://seller-dashboard-iota.vercel.app/success?activeCode=${uniqueId}`,
         type: "account_onboarding",
       });
       await Payment.create({
@@ -44,8 +44,8 @@ exports.createSellerStripeAccount = catchAsync(async (req, res, next) => {
       const account = await stripe.accounts.create({ type: "express" });
       const accountLink = await stripe.accountLinks.create({
         account: account.id,
-        refresh_url: `http://localhost:5174/refresh`,
-        return_url: `http://localhost:5174/success?activeCode=${uniqueId}`,
+        refresh_url: `https://seller-dashboard-iota.vercel.app/refresh`,
+        return_url: `https://seller-dashboard-iota.vercel.app/success?activeCode=${uniqueId}`,
         type: "account_onboarding",
       });
       await Payment.create({
