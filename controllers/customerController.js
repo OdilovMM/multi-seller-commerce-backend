@@ -325,7 +325,7 @@ exports.addRemoveWishList = catchAsync(async (req, res, next) => {
       await Wishlist.findByIdAndDelete(savedWishlist._id);
 
       res.status(200).json({
-        status: "Deleted",
+        status: "Removed",
         data: {
           savedWishlist,
           isSaved: !savedWishlist ? true : false,
@@ -381,7 +381,7 @@ exports.addRemoveCart = catchAsync(async (req, res, next) => {
       await Cart.findByIdAndDelete(savedCart._id);
 
       res.status(200).json({
-        status: "Deleted",
+        status: "Removed",
         data: {
           savedCart,
           isSaved: !savedCart ? true : false,

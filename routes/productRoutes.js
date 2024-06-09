@@ -31,7 +31,7 @@ router.delete(
 );
 
 router.patch(
-  "/update-product/:productId",
+  "/update-product",
   sellerController.protect,
   sellerController.restrictTo("seller"),
   productController.updateProduct

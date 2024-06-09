@@ -169,14 +169,14 @@ exports.getSingleProductToAdmin = catchAsync(async (req, res, next) => {
 exports.updateProduct = catchAsync(async (req, res, next) => {
   let { name, description, discount, price, brand, stock, productId } =
     req.body;
-  name = name.trim();
-  const slug = name.split(" ").join("-");
+  trimmedName = name?.trim();
+  const slug = trimmedName.split(" ").join("-");
 
   try {
     await Product.findByIdAndUpdate(
       productId,
       {
-        name,
+        name: trimmedName,
         description,
         discount,
         price,
@@ -212,7 +212,7 @@ exports.updateProductImage = catchAsync(async (req, res, next) => {
     const { newImage } = files;
 
     if (err) {
-      responseReturn(res, 400, { error: error.message });
+      return next(new AppError(err.message, 404));
     } else {
       try {
         cloudinary.config({
@@ -240,10 +240,10 @@ exports.updateProductImage = catchAsync(async (req, res, next) => {
             },
           });
         } else {
-          return next(new AppError(error.message, 404));
+          return next(new AppError(err.message, 404));
         }
       } catch (error) {
-        return next(new AppError(error.message, 500));
+        return next(new AppError(err.message, 500));
       }
     }
   });
@@ -431,7 +431,7 @@ exports.getHomeProducts = catchAsync(async (req, res, next) => {
 });
 
 exports.getProductQuery = catchAsync(async (req, res, next) => {
-  const parPage = 9;
+  const parPage = 16;
   req.query.parPage = parPage;
   try {
     const products = await Product.find({}).sort({

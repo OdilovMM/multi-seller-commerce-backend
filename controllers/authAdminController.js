@@ -64,6 +64,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
   const existAdmin = await Admin.findOne({ email });
+  
   if (!existAdmin) {
     return next(new AppError("There is no account with this email", 400));
   }

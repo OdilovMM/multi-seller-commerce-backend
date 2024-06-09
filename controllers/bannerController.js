@@ -6,7 +6,6 @@ const formidable = require("formidable");
 const moment = require("moment");
 const cloudinary = require("cloudinary").v2;
 const chalk = require("chalk");
-
 const {
   mongo: { ObjectId },
 } = require("mongoose");
@@ -66,21 +65,26 @@ exports.addBanner = catchAsync(async (req, res, next) => {
       secure: true,
     });
 
-    const { slug } = await Product.findById(productId);
-    const result = await cloudinary.uploader.upload(mainban.filepath, {
-      folder: "banner",
-    });
-    const banner = await Banner.create({
-      productId,
-      banner: result.url,
-      link: slug,
-    });
-    res.status(201).json({
-      status: "Banner Add",
-      data: {
-        banner,
-      },
-    });
+    try {
+      const { slug } = await Product.findById(productId);
+      const result = await cloudinary.uploader.upload(mainban.filepath, {
+        folder: "banner",
+      });
+      const banner = await Banner.create({
+        productId,
+        banner: result.url,
+        link: slug,
+      });
+      res.status(201).json({
+        status: "Banner Added",
+        data: {
+          banner,
+        },
+      });
+    } catch (error) {
+      console.log(error)
+      return next(new AppError(error.message, 500));
+    }
   });
 });
 
