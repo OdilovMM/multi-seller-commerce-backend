@@ -21,6 +21,7 @@ const bannerRouter = require('./routes/bannerRoutes');
 const paymentRouter = require('./routes/paymentRoutes');
 
 const app = express();
+app.enable('trust proxy')
 
 // 1) GLOBAL MIDDLEWARESs
 app.use(express.static(path.join(__dirname, 'public')));

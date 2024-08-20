@@ -19,22 +19,21 @@ const signToken = (id) => {
   });
 };
 
-const createSendToken = (user, statusCode, res) => {
+const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
-  const cookieOptions = {
+
+  res.cookie('sellerToken', token, {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
     ),
     httpOnly: true,
-  };
-  if (process.env.NODE_ENV === 'development') cookieOptions.secure = true;
-
-  res.cookie('sellerToken', token, cookieOptions);
+    secure: req.secure || req.headers('x-forwarded-proto') === 'https',
+  });
 
   // Remove password from output
   user.password = undefined;
 
-  res.status(201).json({
+  res.status(statusCode).json({
     status: 'success',
     token,
     data: {
@@ -64,7 +63,7 @@ exports.sellerRegister = catchAsync(async (req, res, next) => {
     shopInfo: {},
   });
 
-  createSendToken(newSeller, 201, res);
+  createSendToken(newSeller, 201, req, res);
 });
 
 exports.sellerLogin = catchAsync(async (req, res, next) => {
@@ -87,7 +86,7 @@ exports.sellerLogin = catchAsync(async (req, res, next) => {
   }
 
   // 3) If everything ok, send token to client
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
