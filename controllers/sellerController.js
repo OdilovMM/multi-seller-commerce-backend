@@ -1,19 +1,17 @@
-const crypto = require("crypto");
-const { promisify } = require("util");
-const jwt = require("jsonwebtoken");
-const Seller = require("../models/sellerModel");
-const catchAsync = require("../utils/catchAsync");
-const AppError = require("../utils/appError");
-const { ObjectId } = require("mongoose").Types;
+const { promisify } = require('util');
+const jwt = require('jsonwebtoken');
+const Seller = require('../models/sellerModel');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
+const { ObjectId } = require('mongoose').Types;
 
 // dashboard related
-const SellerWallet = require("../models/sellerWalletModel");
-const Product = require("../models/productModel");
-const AuthOrder = require("../models/authOrderModel");
+const SellerWallet = require('../models/sellerWalletModel');
+const Product = require('../models/productModel');
+const AuthOrder = require('../models/authOrderModel');
 
-const cloudinary = require("cloudinary").v2;
-const formidable = require("formidable");
-const chalk = require("chalk");
+const cloudinary = require('cloudinary').v2;
+const formidable = require('formidable');
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -25,19 +23,19 @@ const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
   const cookieOptions = {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
     ),
     httpOnly: true,
   };
-  if (process.env.NODE_ENV === "development") cookieOptions.secure = true;
+  if (process.env.NODE_ENV === 'development') cookieOptions.secure = true;
 
-  res.cookie("sellerToken", token, cookieOptions);
+  res.cookie('sellerToken', token, cookieOptions);
 
   // Remove password from output
   user.password = undefined;
 
   res.status(201).json({
-    status: "success",
+    status: 'success',
     token,
     data: {
       user,
@@ -51,10 +49,10 @@ exports.sellerRegister = catchAsync(async (req, res, next) => {
   const existingSeller = await Seller.findOne({ email });
 
   if (existingSeller) {
-    return next(new AppError("Seller Already exist!", 403));
+    return next(new AppError('Seller Already exist!', 403));
   }
   if (!email || !password || !firstName || !lastName) {
-    return next(new AppError("Please provide all credentials", 404));
+    return next(new AppError('Please provide all credentials', 404));
   }
 
   const newSeller = await Seller.create({
@@ -62,7 +60,7 @@ exports.sellerRegister = catchAsync(async (req, res, next) => {
     lastName: req.body.lastName,
     email: req.body.email,
     password: req.body.password,
-    method: "manual",
+    method: 'manual',
     shopInfo: {},
   });
 
@@ -74,18 +72,18 @@ exports.sellerLogin = catchAsync(async (req, res, next) => {
 
   const existSeller = await Seller.findOne({ email });
   if (!existSeller) {
-    return next(new AppError("There is no account with this email", 400));
+    return next(new AppError('There is no account with this email', 400));
   }
 
   // 1) Check if email and password exist
   if (!email || !password) {
-    return next(new AppError("Please provide email and password!", 400));
+    return next(new AppError('Please provide email and password!', 400));
   }
   // 2) Check if user exists && password is correct
-  const user = await Seller.findOne({ email }).select("+password");
+  const user = await Seller.findOne({ email }).select('+password');
 
   if (!user || !(await user.correctPassword(password, user.password))) {
-    return next(new AppError("Incorrect email or password", 401));
+    return next(new AppError('Incorrect email or password', 401));
   }
 
   // 3) If everything ok, send token to client
@@ -97,15 +95,14 @@ exports.protect = catchAsync(async (req, res, next) => {
   let token;
   if (
     req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
+    req.headers.authorization.startsWith('Bearer')
   ) {
-    token = req.headers.authorization.split(" ")[1];
+    token = req.headers.authorization.split(' ')[1];
   }
-
 
   if (!token) {
     return next(
-      new AppError("You are not logged in! Please log in to get access.", 401)
+      new AppError('You are not logged in! Please log in to get access.', 401),
     );
   }
 
@@ -117,9 +114,9 @@ exports.protect = catchAsync(async (req, res, next) => {
   if (!currentUser) {
     return next(
       new AppError(
-        "The user belonging to this token does no longer exist.",
-        401
-      )
+        'The user belonging to this token does no longer exist.',
+        401,
+      ),
     );
   }
 
@@ -132,7 +129,7 @@ exports.restrictTo = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
       return next(
-        new AppError("You do not have permission to perform this action", 403)
+        new AppError('You do not have permission to perform this action', 403),
       );
     }
 
@@ -141,12 +138,12 @@ exports.restrictTo = (...roles) => {
 };
 
 exports.sellerLogout = (req, res) => {
-  res.cookie("sellerToken", null, {
+  res.cookie('sellerToken', null, {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
   });
   res.status(200).json({
-    status: "Logging out...",
+    status: 'Logging out...',
   });
 };
 
@@ -166,20 +163,20 @@ exports.uploadSellerProfileImage = catchAsync(async (req, res, next) => {
 
     try {
       const result = await cloudinary.uploader.upload(image.filepath, {
-        folder: "profile",
+        folder: 'profile',
       });
 
       if (result) {
         await Seller.findByIdAndUpdate(id, { image: result.url });
         const userInfo = await Seller.findById(id);
         res.status(200).json({
-          status: "Image Uploaded",
+          status: 'Image Uploaded',
           data: {
             userInfo,
           },
         });
       } else {
-        return next(new AppError("Invalid Image", 400));
+        return next(new AppError('Invalid Image', 400));
       }
     } catch (error) {
       return next(new AppError(error.message, 500));
@@ -192,7 +189,7 @@ exports.getSellerDetail = catchAsync(async (req, res, next) => {
 
   const seller = await Seller.findById(sellerId);
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: {
       seller,
     },
@@ -213,7 +210,7 @@ exports.addSellerAddress = catchAsync(async (req, res, next) => {
     });
     const sellerInfo = await Seller.findById(id);
     res.status(201).json({
-      status: "User information updated",
+      status: 'User information updated',
       data: {
         sellerInfo,
       },
@@ -230,16 +227,16 @@ exports.getSellerRequestToActive = catchAsync(async (req, res, next) => {
   try {
     if (search) {
     } else {
-      const sellers = await Seller.find({ status: "pending" })
+      const sellers = await Seller.find({ status: 'pending' })
         .skip(skipPage)
         .limit(parPage)
         .sort({ createdAt: -1 });
 
       const totalSellers = await Seller.find({
-        status: "pending",
+        status: 'pending',
       }).countDocuments();
       res.status(200).json({
-        status: "success",
+        status: 'success',
         data: {
           sellers,
           totalSellers,
@@ -256,7 +253,7 @@ exports.getMeSeller = catchAsync(async (req, res, next) => {
 
   const seller = await Seller.findById(_id);
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: {
       seller,
     },
@@ -285,18 +282,18 @@ exports.getActiveSellers = catchAsync(async (req, res, next) => {
     if (search) {
       const sellers = await Seller.find({
         $text: { $search: search },
-        status: "active",
+        status: 'active',
       })
         .skip(skipPage)
         .limit(parPage)
         .sort({ createdAt: -1 });
       const totalSellers = await Seller.find({
         $text: { $search: search },
-        status: "active",
+        status: 'active',
       }).countDocuments();
 
       res.status(200).json({
-        status: "success",
+        status: 'success',
         data: {
           totalSellers,
           sellers,
@@ -304,18 +301,18 @@ exports.getActiveSellers = catchAsync(async (req, res, next) => {
       });
     } else {
       const sellers = await Seller.find({
-        status: "active",
+        status: 'active',
       })
         .skip(skipPage)
         .limit(parPage)
         .sort({ createdAt: -1 });
 
       const totalSellers = await Seller.find({
-        status: "active",
+        status: 'active',
       }).countDocuments();
 
       res.status(200).json({
-        status: "success",
+        status: 'success',
         data: {
           totalSellers,
           sellers,
@@ -336,7 +333,7 @@ exports.getDeActiveSellers = catchAsync(async (req, res, next) => {
     if (search) {
       const deactiveSellers = await Seller.find({
         $text: { $search: search },
-        status: "deactive",
+        status: 'deactive',
       })
         .skip(skipPage)
         .limit(parPage)
@@ -344,10 +341,10 @@ exports.getDeActiveSellers = catchAsync(async (req, res, next) => {
 
       const totalDeactives = await Seller.find({
         $text: { $search: search },
-        status: "deactive",
+        status: 'deactive',
       }).countDocuments();
       res.status(200).json({
-        status: "success",
+        status: 'success',
         data: {
           totalDeactives,
           deactiveSellers,
@@ -355,18 +352,18 @@ exports.getDeActiveSellers = catchAsync(async (req, res, next) => {
       });
     } else {
       const deactiveSellers = await Seller.find({
-        status: "deactive",
+        status: 'deactive',
       })
         .skip(skipPage)
         .limit(parPage)
         .sort({ createdAt: -1 });
 
       const totalDeactives = await Seller.find({
-        status: "deactive",
+        status: 'deactive',
       }).countDocuments();
 
       res.status(200).json({
-        status: "success",
+        status: 'success',
         data: {
           totalDeactives,
           deactiveSellers,
@@ -394,7 +391,7 @@ exports.uploadSellerProfilePhoto = catchAsync(async (req, res, next) => {
 
     try {
       const result = await cloudinary.uploader.upload(image.filepath, {
-        folder: "profile",
+        folder: 'profile',
       });
 
       if (result) {
@@ -402,13 +399,13 @@ exports.uploadSellerProfilePhoto = catchAsync(async (req, res, next) => {
         const userInfo = await Seller.findById(id);
 
         res.status(200).json({
-          status: "success",
+          status: 'success',
           data: {
             userInfo,
           },
         });
       } else {
-        return next(new AppError("Image upload failed", 400));
+        return next(new AppError('Image upload failed', 400));
       }
     } catch (error) {
       return next(new AppError(error.message, 400));
@@ -430,7 +427,7 @@ exports.getSellerDashboardInfo = catchAsync(async (req, res, next) => {
         $group: {
           _id: null,
           totalAmount: {
-            $sum: "$amount",
+            $sum: '$amount',
           },
         },
       },
@@ -452,7 +449,7 @@ exports.getSellerDashboardInfo = catchAsync(async (req, res, next) => {
         },
         {
           deliveryStatus: {
-            $eq: "pending",
+            $eq: 'pending',
           },
         },
       ],
@@ -463,7 +460,7 @@ exports.getSellerDashboardInfo = catchAsync(async (req, res, next) => {
     }).limit(3);
 
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: {
         totalSales: totalSales.length > 0 ? totalSales[0].totalAmount : 0,
         totalProducts,

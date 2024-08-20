@@ -1,34 +1,29 @@
-const { promisify } = require("util");
-const Customer = require("../models/customerModel");
-const CustomerOrder = require("../models/customerOrderModel");
-const AuthOrder = require("../models/authOrderModel");
-const Cart = require("../models/cartModel");
-const Product = require("../models/productModel");
-const MyWallet = require("../models/myWalletModel");
-const SellerWallet = require("../models/sellerWalletModel");
-const Order = require("../models/orderModel");
-const catchAsync = require("../utils/catchAsync");
-const AppError = require("../utils/appError");
-const chalk = require("chalk");
-const { ObjectId } = require("mongoose").Types;
-const stripe = require("stripe")(process.env.SECRET_KEY_STRIPE);
-const moment = require("moment");
+const CustomerOrder = require('../models/customerOrderModel');
+const AuthOrder = require('../models/authOrderModel');
+const Cart = require('../models/cartModel');
+const MyWallet = require('../models/myWalletModel');
+const SellerWallet = require('../models/sellerWalletModel');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
+const { ObjectId } = require('mongoose').Types;
+const stripe = require('stripe')(process.env.SECRET_KEY_STRIPE);
+const moment = require('moment');
 
 const paymentCheck = async (id) => {
   try {
     const order = await CustomerOrder.findById(id);
-    if (order.paymentStatus === "unpaid") {
+    if (order.paymentStatus === 'unpaid') {
       //
       await CustomerOrder.findByIdAndUpdate(id, {
-        deliveryStatus: "canceled",
+        deliveryStatus: 'canceled',
       });
       await AuthOrder.updateMany(
         {
           orderId: id,
         },
         {
-          deliveryStatus: "canceled",
-        }
+          deliveryStatus: 'canceled',
+        },
       );
     }
     return true;
@@ -50,7 +45,7 @@ exports.placeNewOrder = catchAsync(async (req, res, next) => {
 
   let authorOrderData = [];
   let cartId = [];
-  const formatData = moment(Date.now()).format("LLL");
+  const formatData = moment(Date.now()).format('LLL');
   let customerOrderProduct = [];
 
   for (let i = 0; i < products.length; i++) {
@@ -71,8 +66,8 @@ exports.placeNewOrder = catchAsync(async (req, res, next) => {
       shippingInfo: shippingToAddress,
       products: customerOrderProduct,
       price: price + shippingFee,
-      paymentStatus: "unpaid",
-      deliveryStatus: "pending",
+      paymentStatus: 'unpaid',
+      deliveryStatus: 'pending',
       date: formatData,
     });
 
@@ -91,9 +86,9 @@ exports.placeNewOrder = catchAsync(async (req, res, next) => {
         sellerId,
         products: storeProducts,
         price: totalPrice,
-        paymentStatus: "unpaid",
-        shippingInfo: "Market Warehouse",
-        deliveryStatus: "pending",
+        paymentStatus: 'unpaid',
+        shippingInfo: 'Market Warehouse',
+        deliveryStatus: 'pending',
         date: formatData,
       });
     }
@@ -102,12 +97,15 @@ exports.placeNewOrder = catchAsync(async (req, res, next) => {
     for (let k = 0; k < cartId.length; k++) {
       await Cart.findByIdAndDelete(cartId[k]);
     }
-    setTimeout(() => {
-      paymentCheck(order.id);
-    }, 10 * 60 * 1000); // cancel in  10 minutes later if not payment done
+    setTimeout(
+      () => {
+        paymentCheck(order.id);
+      },
+      10 * 60 * 1000,
+    ); // cancel in  10 minutes later if not payment done
 
     res.status(201).json({
-      status: "Order placed",
+      status: 'Order placed',
       data: {
         orderId: order.id,
       },
@@ -123,7 +121,7 @@ exports.getAllOrdersByStatus = catchAsync(async (req, res, next) => {
   let orders = [];
 
   try {
-    if (status !== "all") {
+    if (status !== 'all') {
       orders = await CustomerOrder.find({
         customerId: new ObjectId(userId),
         deliveryStatus: status,
@@ -135,7 +133,7 @@ exports.getAllOrdersByStatus = catchAsync(async (req, res, next) => {
     }
 
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: {
         orders,
       },
@@ -150,7 +148,7 @@ exports.getOrderDetail = catchAsync(async (req, res, next) => {
   const myOrder = await CustomerOrder.findById(orderId);
 
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: {
       myOrder,
     },
@@ -163,14 +161,14 @@ exports.customerOrderMake = catchAsync(async (req, res, next) => {
   try {
     const payment = await stripe.paymentIntents.create({
       amount: price * 100,
-      currency: "usd",
+      currency: 'usd',
       automatic_payment_methods: {
         enabled: true,
       },
     });
 
     res.status(201).json({
-      status: "success",
+      status: 'success',
       clientSecret: payment.client_secret,
     });
   } catch (error) {
@@ -182,14 +180,16 @@ exports.orderConfirm = catchAsync(async (req, res) => {
   const { orderId } = req.params;
   try {
     await CustomerOrder.findByIdAndUpdate(orderId, {
-      paymentStatus: "paid",
+      paymentStatus: 'paid',
     });
     await AuthOrder.updateMany(
-      { orderId: new ObjectId(orderId) },
       {
-        paymentStatus: "paid",
-        deliveryStatus: "pending",
-      }
+        orderId: new ObjectId(orderId),
+      },
+      {
+        paymentStatus: 'paid',
+        deliveryStatus: 'pending',
+      },
     );
     const cuOrder = await CustomerOrder.findById(orderId);
 
@@ -197,8 +197,8 @@ exports.orderConfirm = catchAsync(async (req, res) => {
       orderId: new ObjectId(orderId),
     });
 
-    const time = moment(Date.now()).format("l");
-    const splitTime = time.split("/");
+    const time = moment(Date.now()).format('l');
+    const splitTime = time.split('/');
 
     await MyWallet.create({
       amount: cuOrder.price,
@@ -215,7 +215,7 @@ exports.orderConfirm = catchAsync(async (req, res) => {
       });
     }
     res.status(201).json({
-      status: "success",
+      status: 'success',
     });
   } catch (error) {
     return next(new AppError(error.message, 500));
@@ -231,18 +231,18 @@ exports.getCustomerDashboardData = catchAsync(async (req, res) => {
     }).limit(5);
     const pendingOrder = await CustomerOrder.find({
       customerId: new ObjectId(userId),
-      deliveryStatus: "pending",
+      deliveryStatus: 'pending',
     }).countDocuments(5);
     const totalOrder = await CustomerOrder.find({
       customerId: new ObjectId(userId),
     }).countDocuments();
     const cancelledOrder = await CustomerOrder.find({
       customerId: new ObjectId(userId),
-      deliveryStatus: "canceled",
+      deliveryStatus: 'canceled',
     }).countDocuments();
 
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: {
         recentOrders,
         pendingOrder,
@@ -273,14 +273,16 @@ exports.getSellerOrders = catchAsync(async (req, res, next) => {
     })
       .skip(skipPage)
       .limit(parPage)
-      .sort({ createdAt: -1 });
+      .sort({
+        createdAt: -1,
+      });
 
     const totalOrders = await AuthOrder.find({
       sellerId,
     }).countDocuments();
 
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: {
         orders,
         totalOrder: totalOrders.length,
@@ -294,7 +296,7 @@ exports.getSellerSingleOrderDetail = catchAsync(async (req, res) => {
 
   const order = await AuthOrder.findById(orderId);
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: {
       order,
     },
@@ -310,7 +312,7 @@ exports.sellerOrderUpdateStatus = catchAsync(async (req, res) => {
     deliveryStatus: status,
   });
   res.status(200).json({
-    status: "Order Updated",
+    status: 'Order Updated',
   });
 });
 
@@ -327,29 +329,31 @@ exports.getAdminOrders = catchAsync(async (req, res, next) => {
     const orders = await CustomerOrder.aggregate([
       {
         $lookup: {
-          from: "authorders",
-          localField: "_id",
-          foreignField: "orderId",
-          as: "suborder",
+          from: 'authorders',
+          localField: '_id',
+          foreignField: 'orderId',
+          as: 'suborder',
         },
       },
     ])
       .skip(skipPage)
       .limit(parPage)
-      .sort({ createdAt: -1 });
+      .sort({
+        createdAt: -1,
+      });
 
     const totalOrders = await CustomerOrder.aggregate([
       {
         $lookup: {
-          from: "authorders",
-          localField: "_id",
-          foreignField: "orderId",
-          as: "suborder",
+          from: 'authorders',
+          localField: '_id',
+          foreignField: 'orderId',
+          as: 'suborder',
         },
       },
     ]);
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: {
         orders,
         totalOrder: totalOrders.length,
@@ -363,19 +367,21 @@ exports.getSingleOrderDetail = catchAsync(async (req, res) => {
 
   const order = await CustomerOrder.aggregate([
     {
-      $match: { _id: new ObjectId(orderId) },
+      $match: {
+        _id: new ObjectId(orderId),
+      },
     },
     {
       $lookup: {
-        from: "authorders",
-        localField: "_id",
-        foreignField: "orderId",
-        as: "suborder",
+        from: 'authorders',
+        localField: '_id',
+        foreignField: 'orderId',
+        as: 'suborder',
       },
     },
   ]);
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: {
       order: order[0],
     },
@@ -391,6 +397,6 @@ exports.adminOrderUpdateStatus = catchAsync(async (req, res) => {
   });
 
   res.status(200).json({
-    status: "Order Updated",
+    status: 'Order Updated',
   });
 });

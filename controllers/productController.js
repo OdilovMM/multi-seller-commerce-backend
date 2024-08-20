@@ -1,18 +1,15 @@
-const Category = require("./../models/categoryModel");
-const Review = require("./../models/reviewModel");
-const Product = require("./../models/productModel");
-const Banner = require("./../models/bannerModel");
-const catchAsync = require("./../utils/catchAsync");
-const AppError = require("./../utils/appError");
-const formidable = require("formidable");
-const moment = require("moment");
-const cloudinary = require("cloudinary").v2;
-const queryProducts = require("../utils/queryProducts");
-const chalk = require("chalk");
+const Review = require('./../models/reviewModel');
+const Product = require('./../models/productModel');
+const catchAsync = require('./../utils/catchAsync');
+const AppError = require('./../utils/appError');
+const formidable = require('formidable');
+const moment = require('moment');
+const cloudinary = require('cloudinary').v2;
+const queryProducts = require('../utils/queryProducts');
 
 const {
   mongo: { ObjectId },
-} = require("mongoose");
+} = require('mongoose');
 
 formateProduct = (products) => {
   const productArray = [];
@@ -36,7 +33,7 @@ exports.allProducts = catchAsync(async (req, res, next) => {
   const products = await Product.find();
 
   res.status(200).json({
-    status: "dwadwd",
+    status: 'dwadwd',
     data: {
       products,
     },
@@ -60,7 +57,7 @@ exports.addProduct = catchAsync(async (req, res, next) => {
     const { images } = files;
 
     name = name.trim();
-    const slug = name.split(" ").join("-");
+    const slug = name.split(' ').join('-');
 
     cloudinary.config({
       cloud_name: process.env.CLOUD_NAME,
@@ -74,7 +71,7 @@ exports.addProduct = catchAsync(async (req, res, next) => {
 
       for (let i = 0; i < images.length; i++) {
         const result = await cloudinary.uploader.upload(images[i].filepath, {
-          folder: "products",
+          folder: 'products',
         });
         allImageUrl = [...allImageUrl, result.url];
       }
@@ -94,7 +91,7 @@ exports.addProduct = catchAsync(async (req, res, next) => {
       });
 
       res.status(201).json({
-        status: "Product Added",
+        status: 'Product Added',
         data: {
           product,
         },
@@ -138,7 +135,7 @@ exports.getSingleProduct = catchAsync(async (req, res, next) => {
       ],
     }).limit(5);
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: {
         product,
         categoryRelatedProducts,
@@ -151,12 +148,11 @@ exports.getSingleProduct = catchAsync(async (req, res, next) => {
 });
 
 exports.getSingleProductToAdmin = catchAsync(async (req, res, next) => {
-  const { productId } = req.params;
   try {
     const product = await Product.findById({ _id: req.params.productId });
 
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: {
         product,
       },
@@ -170,7 +166,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
   let { name, description, discount, price, brand, stock, productId } =
     req.body;
   trimmedName = name?.trim();
-  const slug = trimmedName.split(" ").join("-");
+  const slug = trimmedName.split(' ').join('-');
 
   try {
     await Product.findByIdAndUpdate(
@@ -188,13 +184,13 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
       {
         new: true,
         runValidators: true,
-      }
+      },
     );
 
     const product = await Product.findById(productId);
 
     res.status(200).json({
-      status: "Product Updated",
+      status: 'Product Updated',
       data: {
         product,
       },
@@ -223,7 +219,7 @@ exports.updateProductImage = catchAsync(async (req, res, next) => {
         });
 
         const result = await cloudinary.uploader.upload(newImage.filepath, {
-          folder: "products",
+          folder: 'products',
         });
 
         if (result) {
@@ -234,7 +230,7 @@ exports.updateProductImage = catchAsync(async (req, res, next) => {
 
           const product = await Product.findById(productId);
           res.status(200).json({
-            status: "Product Image updated",
+            status: 'Product Image updated',
             data: {
               product,
             },
@@ -255,7 +251,7 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
   await Product.findByIdAndDelete({ sellerId: id, id: productId });
 
   res.status(200).json({
-    status: "Product Deleted",
+    status: 'Product Deleted',
     data: {
       data: null,
     },
@@ -271,7 +267,7 @@ exports.addProductReview = catchAsync(async (req, res, next) => {
       name,
       rating,
       review,
-      date: moment(Date.now()).format("LL"),
+      date: moment(Date.now()).format('LL'),
     });
 
     let rat = 0;
@@ -289,7 +285,7 @@ exports.addProductReview = catchAsync(async (req, res, next) => {
       rating: productRating,
     });
     res.status(201).json({
-      status: "Review added",
+      status: 'Review added',
     });
   } catch (error) {
     return next(new AppError(error.message, 500));
@@ -318,11 +314,11 @@ exports.getAllProductReviews = catchAsync(async (req, res, next) => {
         },
       },
       {
-        $unwind: "$rating",
+        $unwind: '$rating',
       },
       {
         $group: {
-          _id: "$rating",
+          _id: '$rating',
           count: {
             $sum: 1,
           },
@@ -373,7 +369,7 @@ exports.getAllProductReviews = catchAsync(async (req, res, next) => {
       .sort({ createdAt: -1 });
 
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: {
         reviews,
         totalReview: getAll.length,
@@ -406,7 +402,7 @@ exports.getProductsByPriceRange = catchAsync(async (req, res, next) => {
     }
 
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: {
         latestProduct,
         priceRange,
@@ -422,7 +418,7 @@ exports.getHomeProducts = catchAsync(async (req, res, next) => {
   const newArrivals = await Product.find().sort({ createdAt: -1 }).limit(5);
 
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: {
       topRatedProducts,
       newArrivals,
@@ -457,7 +453,7 @@ exports.getProductQuery = catchAsync(async (req, res, next) => {
       .getProducts();
 
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: {
         products: result,
         totalProducts: totalProducts,
@@ -470,8 +466,8 @@ exports.getProductQuery = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllMyProductsSeller = catchAsync(async (req, res, next) => {
-  const { page = 1, search = "", parPage = 10 } = req.query;
-  const id = req.user?.id; // Optional chaining to handle cases where req.user might be undefined
+  const { page = 1, search = '', parPage = 10 } = req.query;
+  const id = req.user?.id;
 
   const skipPage = parseInt(parPage) * (parseInt(page) - 1);
 
@@ -490,7 +486,7 @@ exports.getAllMyProductsSeller = catchAsync(async (req, res, next) => {
     const totalProducts = await Product.find(query).countDocuments();
 
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: {
         products,
         totalProducts,
@@ -506,7 +502,7 @@ exports.getProductToEdit = catchAsync(async (req, res, next) => {
   const product = await Product.findById(productId);
 
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: {
       product,
     },
@@ -520,7 +516,7 @@ exports.updateProductImage = catchAsync(async (req, res, next) => {
   const product = await Product.findById(productId);
 
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: {
       product,
     },
@@ -532,14 +528,14 @@ exports.getProductsByType = catchAsync(async (req, res, next) => {
   const { type } = req.params;
   let products;
 
-  if (type === "top-rated") {
+  if (type === 'top-rated') {
     products = await Product.find().sort({ rating: -1 });
-  } else if (type === "new-arrivals") {
+  } else if (type === 'new-arrivals') {
     products = await Product.find().sort({ createdAt: -1 });
   }
 
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: {
       products,
     },
@@ -554,7 +550,7 @@ exports.addProductReview = catchAsync(async (req, res, next) => {
     firstName,
     rating,
     review,
-    date: moment(Date.now()).format("LL"),
+    date: moment(Date.now()).format('LL'),
   });
 
   let rat = 0;
@@ -573,7 +569,7 @@ exports.addProductReview = catchAsync(async (req, res, next) => {
   });
 
   res.status(200).json({
-    status: "Review Added",
+    status: 'Review Added',
   });
 });
 
@@ -598,11 +594,11 @@ exports.getAllReviews = catchAsync(async (req, res, next) => {
         },
       },
       {
-        $unwind: "$rating",
+        $unwind: '$rating',
       },
       {
         $group: {
-          _id: "$rating",
+          _id: '$rating',
           count: {
             $sum: 1,
           },
@@ -653,7 +649,7 @@ exports.getAllReviews = catchAsync(async (req, res, next) => {
       .sort({ createdAt: -1 });
 
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: {
         reviews,
         totalReview: getAll.length,
@@ -670,7 +666,7 @@ exports.getAllAdminProducts = catchAsync(async (req, res, next) => {
   const productCount = await Product.find({}).countDocuments();
 
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: {
       allProducts,
       productCount,

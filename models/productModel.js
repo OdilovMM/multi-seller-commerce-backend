@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const productSchema = new mongoose.Schema(
@@ -55,15 +55,15 @@ const productSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 productSchema.index(
   {
-    name: "text",
-    category: "text",
-    brand: "text",
-    description: "text",
+    name: 'text',
+    category: 'text',
+    brand: 'text',
+    description: 'text',
   },
   {
     weights: {
@@ -72,8 +72,8 @@ productSchema.index(
       brand: 3,
       description: 2,
     },
-  }
+  },
 );
 
-const Product = mongoose.model("Product", productSchema);
-module.exports = Product
+const Product = mongoose.model('Product', productSchema);
+module.exports = Product;

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const sellerWalletSchema = new mongoose.Schema(
   {
@@ -21,8 +21,8 @@ const sellerWalletSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-const SellerWallet = mongoose.model("SellerWallet", sellerWalletSchema);
-module.exports = SellerWallet
+const SellerWallet = mongoose.model('SellerWallet', sellerWalletSchema);
+module.exports = SellerWallet;

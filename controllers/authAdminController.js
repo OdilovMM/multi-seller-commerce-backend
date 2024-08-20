@@ -1,14 +1,11 @@
-const crypto = require("crypto");
-const { promisify } = require("util");
-const jwt = require("jsonwebtoken");
-const Admin = require("../models/adminModel");
+const { promisify } = require('util');
+const jwt = require('jsonwebtoken');
+const Admin = require('../models/adminModel');
 // dashboard related
-const CustomerOrders = require("../models/customerOrderModel");
-const MyWallet = require("../models/myWalletModel");
-
-const catchAsync = require("../utils/catchAsync");
-const AppError = require("../utils/appError");
-const chalk = require("chalk");
+const CustomerOrders = require('../models/customerOrderModel');
+const MyWallet = require('../models/myWalletModel');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -20,19 +17,19 @@ const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
   const cookieOptions = {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
     ),
     httpOnly: true,
   };
-  if (process.env.NODE_ENV === "development") cookieOptions.secure = true;
+  if (process.env.NODE_ENV === 'development') cookieOptions.secure = true;
 
-  res.cookie("adminToken", token, cookieOptions);
+  res.cookie('adminToken', token, cookieOptions);
 
   // Remove password from output
   user.password = undefined;
 
   res.status(200).json({
-    status: "success",
+    status: 'success',
     token,
     data: {
       user,
@@ -45,10 +42,10 @@ exports.signup = catchAsync(async (req, res, next) => {
   const existingAdmin = await Admin.findOne({ email });
 
   if (existingAdmin) {
-    return next(new AppError("Admin Already exist!", 403));
+    return next(new AppError('Admin Already exist!', 403));
   }
   if (!email || !password || !firstName || !lastName) {
-    return next(new AppError("Please provide all credentials", 404));
+    return next(new AppError('Please provide all credentials', 404));
   }
 
   const newUser = await Admin.create({
@@ -64,20 +61,20 @@ exports.signup = catchAsync(async (req, res, next) => {
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
   const existAdmin = await Admin.findOne({ email });
-  
+
   if (!existAdmin) {
-    return next(new AppError("There is no account with this email", 400));
+    return next(new AppError('There is no account with this email', 400));
   }
 
   // 1) Check if email and password exist
   if (!email || !password) {
-    return next(new AppError("Please provide email and password!", 400));
+    return next(new AppError('Please provide email and password!', 400));
   }
   // 2) Check if user exists && password is correct
-  const user = await Admin.findOne({ email }).select("+password");
+  const user = await Admin.findOne({ email }).select('+password');
 
   if (!user || !(await user.correctPassword(password, user.password))) {
-    return next(new AppError("Incorrect email or password", 401));
+    return next(new AppError('Incorrect email or password', 401));
   }
 
   // 3) If everything ok, send token to client
@@ -89,14 +86,14 @@ exports.protect = catchAsync(async (req, res, next) => {
   let token;
   if (
     req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
+    req.headers.authorization.startsWith('Bearer')
   ) {
-    token = req.headers.authorization.split(" ")[1];
+    token = req.headers.authorization.split(' ')[1];
   }
 
   if (!token) {
     return next(
-      new AppError("You are not logged in! Please log in to get access.", 401)
+      new AppError('You are not logged in! Please log in to get access.', 401),
     );
   }
 
@@ -108,9 +105,9 @@ exports.protect = catchAsync(async (req, res, next) => {
   if (!currentUser) {
     return next(
       new AppError(
-        "The user belonging to this token does no longer exist.",
-        401
-      )
+        'The user belonging to this token does no longer exist.',
+        401,
+      ),
     );
   }
 
@@ -123,7 +120,7 @@ exports.restrictTo = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
       return next(
-        new AppError("You do not have permission to perform this action", 403)
+        new AppError('You do not have permission to perform this action', 403),
       );
     }
 
@@ -132,12 +129,12 @@ exports.restrictTo = (...roles) => {
 };
 
 exports.logout = (req, res) => {
-  res.cookie("adminToken", null, {
+  res.cookie('adminToken', null, {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
   });
   res.status(200).json({
-    status: "Logging out...",
+    status: 'Logging out...',
   });
 };
 
@@ -146,7 +143,7 @@ exports.getMeAdmin = catchAsync(async (req, res, next) => {
 
   const admin = await Admin.findById(_id);
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: {
       admin,
     },
@@ -159,7 +156,7 @@ exports.getAdminDashboardInfo = catchAsync(async (req, res, next) => {
       $group: {
         _id: null,
         totalAmount: {
-          $sum: "$amount",
+          $sum: '$amount',
         },
       },
     },
@@ -167,7 +164,7 @@ exports.getAdminDashboardInfo = catchAsync(async (req, res, next) => {
   const totalOrders = await CustomerOrders.find({}).countDocuments();
 
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: {
       totalSales: totalSales.length > 0 ? totalSales[0].totalAmount : 0,
       totalOrders,

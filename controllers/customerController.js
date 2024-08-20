@@ -1,42 +1,44 @@
-const crypto = require("crypto");
-const { promisify } = require("util");
-const jwt = require("jsonwebtoken");
-const Customer = require("../models/customerModel");
-const Seller = require("../models/sellerModel");
-const Wishlist = require("../models/wishlistModel");
-const Cart = require("../models/cartModel");
-const Product = require("../models/productModel");
-const Category = require("../models/categoryModel");
-const catchAsync = require("../utils/catchAsync");
-const AppError = require("../utils/appError");
-const cloudinary = require("cloudinary").v2;
-const formidable = require("formidable");
-const chalk = require("chalk");
-const { ObjectId } = require("mongoose").Types;
+const { promisify } = require('util');
+const jwt = require('jsonwebtoken');
+const Customer = require('../models/customerModel');
+const Seller = require('../models/sellerModel');
+const Wishlist = require('../models/wishlistModel');
+const Cart = require('../models/cartModel');
+const Product = require('../models/productModel');
+const Category = require('../models/categoryModel');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
+const { ObjectId } = require('mongoose').Types;
 
 const signToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
-  });
+  return jwt.sign(
+    {
+      id,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: process.env.JWT_EXPIRES_IN,
+    },
+  );
 };
 
 const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
   const cookieOptions = {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
     ),
     httpOnly: true,
   };
-  if (process.env.NODE_ENV === "development") cookieOptions.secure = true;
+  if (process.env.NODE_ENV === 'development') cookieOptions.secure = true;
 
-  res.cookie("userToken", token, cookieOptions);
+  res.cookie('userToken', token, cookieOptions);
 
   // Remove password from output
   user.password = undefined;
 
   res.status(200).json({
-    status: "success",
+    status: 'success',
     token,
     data: {
       user,
@@ -47,13 +49,15 @@ const createSendToken = (user, statusCode, res) => {
 exports.userRegister = catchAsync(async (req, res, next) => {
   const { firstName, lastName, email, password } = req.body;
 
-  const existingCustomer = await Customer.findOne({ email });
+  const existingCustomer = await Customer.findOne({
+    email,
+  });
 
   if (existingCustomer) {
-    return next(new AppError("User Already exist!", 403));
+    return next(new AppError('User Already exist!', 403));
   }
   if (!email || !password || !firstName || !lastName) {
-    return next(new AppError("Please provide all credentials", 404));
+    return next(new AppError('Please provide all credentials', 404));
   }
 
   const newSeller = await Customer.create({
@@ -69,20 +73,24 @@ exports.userRegister = catchAsync(async (req, res, next) => {
 exports.userLogin = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
-  const existUser = await Customer.findOne({ email });
+  const existUser = await Customer.findOne({
+    email,
+  });
   if (!existUser) {
-    return next(new AppError("There is no account with this email", 400));
+    return next(new AppError('There is no account with this email', 400));
   }
 
   // 1) Check if email and password exist
   if (!email || !password) {
-    return next(new AppError("Please provide email and password!", 400));
+    return next(new AppError('Please provide email and password!', 400));
   }
   // 2) Check if user exists && password is correct
-  const user = await Customer.findOne({ email }).select("+password");
+  const user = await Customer.findOne({
+    email,
+  }).select('+password');
 
   if (!user || !(await user.correctPassword(password, user.password))) {
-    return next(new AppError("Incorrect email or password", 401));
+    return next(new AppError('Incorrect email or password', 401));
   }
 
   // 3) If everything ok, send token to client
@@ -94,15 +102,13 @@ exports.protect = catchAsync(async (req, res, next) => {
   let token;
   if (
     req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
+    req.headers.authorization.startsWith('Bearer')
   ) {
-    token = req.headers.authorization.split(" ")[1];
+    token = req.headers.authorization.split(' ')[1];
   }
 
   if (!token) {
-    return next(
-      new AppError("Login First", 401)
-    );
+    return next(new AppError('Login First', 401));
   }
 
   // 2) Verification token
@@ -113,9 +119,9 @@ exports.protect = catchAsync(async (req, res, next) => {
   if (!currentUser) {
     return next(
       new AppError(
-        "The user belonging to this token does no longer exist.",
-        401
-      )
+        'The user belonging to this token does no longer exist.',
+        401,
+      ),
     );
   }
 
@@ -128,7 +134,7 @@ exports.restrictTo = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
       return next(
-        new AppError("You do not have permission to perform this action", 403)
+        new AppError('You do not have permission to perform this action', 403),
       );
     }
 
@@ -137,24 +143,22 @@ exports.restrictTo = (...roles) => {
 };
 
 exports.userLogout = (req, res) => {
-  res.cookie("userToken", null, {
+  res.cookie('userToken', null, {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
   });
   res.status(200).json({
-    status: "Logging out...",
+    status: 'Logging out...',
   });
 };
 
 exports.getMe = catchAsync(async (req, res) => {
-
-
   const userInfo = await Customer.findById(req.user.id).populate({
-    path: "wishlists",
+    path: 'wishlists',
   });
 
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: {
       userInfo,
     },
@@ -165,22 +169,25 @@ exports.getMyWishlist = catchAsync(async (req, res) => {
   const wishlistArray = await Wishlist.find({
     userId: new ObjectId(req.user.id),
   }).populate({
-    path: "wishlists",
-    options: { strictPopulate: false },
+    path: 'wishlists',
+    options: {
+      strictPopulate: false,
+    },
   });
 
   const wishlistArrayCount = await Wishlist.find({
     userId: new ObjectId(req.user.id),
   })
     .populate({
-      path: "wishlists",
-      options: { strictPopulate: false },
+      path: 'wishlists',
+      options: {
+        strictPopulate: false,
+      },
     })
     .countDocuments();
 
-
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: {
       wishlistArray,
       wishlistArrayCount,
@@ -190,7 +197,6 @@ exports.getMyWishlist = catchAsync(async (req, res) => {
 
 exports.getCustomerCart = catchAsync(async (req, res) => {
   const co = 5;
-  // const { userId } = req.params;
   try {
     const cardProducts = await Cart.aggregate([
       {
@@ -202,10 +208,10 @@ exports.getCustomerCart = catchAsync(async (req, res) => {
       },
       {
         $lookup: {
-          from: "products",
-          localField: "productId",
-          foreignField: "_id",
-          as: "products",
+          from: 'products',
+          localField: 'productId',
+          foreignField: '_id',
+          as: 'products',
         },
       },
     ]);
@@ -213,13 +219,13 @@ exports.getCustomerCart = catchAsync(async (req, res) => {
     let calculatePrice = 0;
     let cardProductCount = 0;
     const outOfStockProduct = cardProducts.filter(
-      (p) => p.products[0].stock < p.quantity
+      (p) => p.products[0].stock < p.quantity,
     );
     for (let i = 0; i < outOfStockProduct.length; i++) {
       cardProductCount = cardProductCount + outOfStockProduct[i].quantity;
     }
     const stockProduct = cardProducts.filter(
-      (p) => p.products[0].stock >= p.quantity
+      (p) => p.products[0].stock >= p.quantity,
     );
     for (let i = 0; i < stockProduct.length; i++) {
       const { quantity } = stockProduct[i];
@@ -234,7 +240,7 @@ exports.getCustomerCart = catchAsync(async (req, res) => {
       } else {
         calculatePrice = calculatePrice + quantity * price;
       }
-    } // end for
+    }
     let p = [];
     let unique = [
       ...new Set(stockProduct.map((p) => p.products[0].sellerId.toString())),
@@ -280,7 +286,7 @@ exports.getCustomerCart = catchAsync(async (req, res) => {
     }
 
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: {
         cardProducts: p,
         price: calculatePrice,
@@ -302,7 +308,7 @@ exports.addRemoveWishList = catchAsync(async (req, res, next) => {
   const product = await Product.findById(productId);
 
   if (!product) {
-    return next(new AppError("product not found", 404));
+    return next(new AppError('product not found', 404));
   }
 
   try {
@@ -325,7 +331,7 @@ exports.addRemoveWishList = catchAsync(async (req, res, next) => {
       await Wishlist.findByIdAndDelete(savedWishlist._id);
 
       res.status(200).json({
-        status: "Removed",
+        status: 'Removed',
         data: {
           savedWishlist,
           isSaved: !savedWishlist ? true : false,
@@ -337,7 +343,7 @@ exports.addRemoveWishList = catchAsync(async (req, res, next) => {
         productId: productId,
       });
       res.status(201).json({
-        status: "Added",
+        status: 'Added',
         data: {
           savedWishlist,
           isSaved: savedWishlist ? true : false,
@@ -352,13 +358,11 @@ exports.addRemoveWishList = catchAsync(async (req, res, next) => {
 exports.addRemoveCart = catchAsync(async (req, res, next) => {
   const { productId, quantity } = req.body;
   const { id } = req.user;
-  // 6660398e54ded53983177821
-
 
   const product = await Product.findById(productId);
 
   if (!product) {
-    return next(new AppError("product not found", 404));
+    return next(new AppError('product not found', 404));
   }
 
   try {
@@ -381,7 +385,7 @@ exports.addRemoveCart = catchAsync(async (req, res, next) => {
       await Cart.findByIdAndDelete(savedCart._id);
 
       res.status(200).json({
-        status: "Removed",
+        status: 'Removed',
         data: {
           savedCart,
           isSaved: !savedCart ? true : false,
@@ -394,7 +398,7 @@ exports.addRemoveCart = catchAsync(async (req, res, next) => {
         quantity,
       });
       res.status(201).json({
-        status: "Added",
+        status: 'Added',
         data: {
           savedCart,
           isSaved: savedCart ? true : false,
@@ -410,7 +414,10 @@ exports.incrementProductInCart = catchAsync(async (req, res, next) => {
   const { productId } = req.params;
   const userId = req.user._id;
 
-  const cartItem = await Cart.findOne({ userId, productId });
+  const cartItem = await Cart.findOne({
+    userId,
+    productId,
+  });
 
   if (!cartItem) {
     return next(new AppError(error.message, 404));
@@ -419,7 +426,7 @@ exports.incrementProductInCart = catchAsync(async (req, res, next) => {
   await cartItem.save();
 
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: {
       cartItem,
     },
@@ -430,20 +437,23 @@ exports.decrementProductInCart = catchAsync(async (req, res, next) => {
   const { productId } = req.params;
   const userId = req.user._id;
 
-  const cartItem = await Cart.findOne({ userId, productId });
+  const cartItem = await Cart.findOne({
+    userId,
+    productId,
+  });
   if (!cartItem) {
     return next(new AppError(error.message, 404));
   }
 
   if (cartItem.quantity <= 1) {
-    return next(new AppError("Quantity can not be less than 1", 400));
+    return next(new AppError('Quantity can not be less than 1', 400));
   }
 
   cartItem.quantity -= 1;
   await cartItem.save();
 
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: {
       cartItem,
     },
@@ -457,12 +467,12 @@ exports.getAllCustomers = catchAsync(async (req, res, next) => {
   const countCategory = await Category.find({}).countDocuments();
 
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: {
       customers,
       countCustomer,
       countSeller,
-      countCategory
+      countCategory,
     },
   });
 });

@@ -1,8 +1,6 @@
-const Cart = require("./../models/cartModel");
-const catchAsync = require("./../utils/catchAsync");
-const AppError = require("./../utils/appError");
-const formidable = require("formidable");
-const cloudinary = require("cloudinary").v2;
+const Cart = require('./../models/cartModel');
+const catchAsync = require('./../utils/catchAsync');
+const AppError = require('./../utils/appError');
 
 exports.addProductToCart = catchAsync(async (req, res, next) => {
   const { userId, productId, quantity } = req.body;
@@ -23,7 +21,7 @@ exports.addProductToCart = catchAsync(async (req, res, next) => {
     });
 
     if (product) {
-      return next(new AppError("Already Added To Card", 404));
+      return next(new AppError('Already Added To Card', 404));
     } else {
       const product = await Cart.create({
         userId,
@@ -31,7 +29,7 @@ exports.addProductToCart = catchAsync(async (req, res, next) => {
         quantity,
       });
       res.status(201).json({
-        status: "Product Added",
+        status: 'Product Added',
         token,
         data: {
           product,
@@ -42,5 +40,3 @@ exports.addProductToCart = catchAsync(async (req, res, next) => {
     return next(new AppError(error.message, 500));
   }
 });
-exports.getAllCartProducts = catchAsync(async (req, res, next) => {});
-exports.deleteProductFromCart = catchAsync(async (req, res, next) => {});

@@ -1,32 +1,32 @@
-const mongoose = require("mongoose");
-const validator = require("validator");
-const bcrypt = require("bcryptjs");
+const mongoose = require('mongoose');
+const validator = require('validator');
+const bcrypt = require('bcryptjs');
 const Schema = mongoose.Schema;
 
 const customerSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
-      required: [true, "Please tell us your first name!"],
+      required: [true, 'Please tell us your first name!'],
     },
     lastName: {
       type: String,
-      required: [true, "Please tell us your last name!"],
+      required: [true, 'Please tell us your last name!'],
     },
     email: {
       type: String,
-      required: [true, "Please provide your email!"],
-      validate: [validator.isEmail, "Please provide a valid email"],
+      required: [true, 'Please provide your email!'],
+      validate: [validator.isEmail, 'Please provide a valid email'],
       unique: true,
     },
     role: {
       type: String,
-      enum: ["user", "seller", "admin"],
-      default: "user",
+      enum: ['user', 'seller', 'admin'],
+      default: 'user',
     },
     password: {
       type: String,
-      required: [true, "Please provide a password"],
+      required: [true, 'Please provide a password'],
       select: false,
       minlength: 8,
     },
@@ -38,7 +38,7 @@ const customerSchema = new mongoose.Schema(
     method: {
       type: String,
       required: true,
-      default: "manual",
+      default: 'manual',
     },
   },
   {
@@ -47,7 +47,7 @@ const customerSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Parent relationship virtual populate
@@ -56,20 +56,20 @@ const customerSchema = new mongoose.Schema(
 //   foreignField: "authorId",
 //   localField: "_id",
 // });
-customerSchema.virtual("wishlists", {
-  ref: "Product",
-  foreignField: "userId",
-  localField: "_id",
+customerSchema.virtual('wishlists', {
+  ref: 'Product',
+  foreignField: 'userId',
+  localField: '_id',
 });
-customerSchema.virtual("carts", {
-  ref: "Product",
-  foreignField: "userId",
-  localField: "_id",
+customerSchema.virtual('carts', {
+  ref: 'Product',
+  foreignField: 'userId',
+  localField: '_id',
 });
 
-customerSchema.pre("save", async function (next) {
+customerSchema.pre('save', async function (next) {
   // Only run this function if password was actually modified
-  if (!this.isModified("password")) return next();
+  if (!this.isModified('password')) return next();
 
   // Hash the password with cost of 12
   this.password = await bcrypt.hash(this.password, 12);
@@ -79,10 +79,10 @@ customerSchema.pre("save", async function (next) {
 
 customerSchema.methods.correctPassword = async function (
   candidatePassword,
-  userPassword
+  userPassword,
 ) {
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
-const Customer = mongoose.model("Customer", customerSchema);
+const Customer = mongoose.model('Customer', customerSchema);
 module.exports = Customer;

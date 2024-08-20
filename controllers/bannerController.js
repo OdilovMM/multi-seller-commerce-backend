@@ -1,14 +1,12 @@
-const Product = require("./../models/productModel");
-const Banner = require("./../models/bannerModel");
-const catchAsync = require("./../utils/catchAsync");
-const AppError = require("./../utils/appError");
-const formidable = require("formidable");
-const moment = require("moment");
-const cloudinary = require("cloudinary").v2;
-const chalk = require("chalk");
+const Product = require('./../models/productModel');
+const Banner = require('./../models/bannerModel');
+const catchAsync = require('./../utils/catchAsync');
+const AppError = require('./../utils/appError');
+const formidable = require('formidable');
+const cloudinary = require('cloudinary').v2;
 const {
   mongo: { ObjectId },
-} = require("mongoose");
+} = require('mongoose');
 
 formateProduct = (products) => {
   const productArray = [];
@@ -28,24 +26,12 @@ formateProduct = (products) => {
   return productArray;
 };
 
-// exports.allProducts = catchAsync(async (req, res, next) => {
-//   const products = await Product.find();
-
-//   res.status(200).json({
-//     status: "dwadwd",
-//     data: {
-//       products,
-//     },
-//   });
-// });
 
 exports.getAllBanners = catchAsync(async (req, res, next) => {
   const banners = await Banner.find({});
 
-  console.log("banners", banners);
-
   res.status(200).json({
-    status: "ok",
+    status: 'ok',
     data: {
       banners,
     },
@@ -68,7 +54,7 @@ exports.addBanner = catchAsync(async (req, res, next) => {
     try {
       const { slug } = await Product.findById(productId);
       const result = await cloudinary.uploader.upload(mainban.filepath, {
-        folder: "banner",
+        folder: 'banner',
       });
       const banner = await Banner.create({
         productId,
@@ -76,13 +62,12 @@ exports.addBanner = catchAsync(async (req, res, next) => {
         link: slug,
       });
       res.status(201).json({
-        status: "Banner Added",
+        status: 'Banner Added',
         data: {
           banner,
         },
       });
     } catch (error) {
-      console.log(error)
       return next(new AppError(error.message, 500));
     }
   });
@@ -95,7 +80,7 @@ exports.getBanner = catchAsync(async (req, res, next) => {
     productId: new ObjectId(productId),
   });
   res.status(201).json({
-    status: "success",
+    status: 'success',
     data: {
       getBanner,
     },
@@ -117,13 +102,13 @@ exports.updateBanner = catchAsync(async (req, res, next) => {
     });
 
     const banner = await Banner.findById(bannerId);
-    let temp = banner.banner.split("/");
+    let temp = banner.banner.split('/');
     temp = temp[temp.length - 1];
-    const imageName = temp.split(".")[0];
+    const imageName = temp.split('.')[0];
     await cloudinary.uploader.destroy(imageName);
 
     const { url } = await cloudinary.uploader.upload(mainban.filepath, {
-      folder: "banner",
+      folder: 'banner',
     });
 
     await Banner.findByIdAndUpdate(bannerId, {
@@ -133,7 +118,7 @@ exports.updateBanner = catchAsync(async (req, res, next) => {
     const updatedBanner = await Banner.findById(bannerId);
 
     res.status(201).json({
-      status: "Banner Updated",
+      status: 'Banner Updated',
       data: {
         banner: updatedBanner,
       },

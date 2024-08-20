@@ -1,14 +1,13 @@
-const SellerWallet = require("../models/sellerWalletModel");
-const Payment = require("../models/paymentModel");
-const Seller = require("../models/sellerModel");
-const WithDrawal = require("../models/withdrawalReqModel");
-const catchAsync = require("../utils/catchAsync");
-const AppError = require("../utils/appError");
-const { ObjectId } = require("mongoose").Types;
-const moment = require("moment");
-const { v4: uuidv4 } = require("uuid");
-const sellerUrl = "http://localhost:5174";
-const stripe = require("stripe")(process.env.SECRET_KEY_STRIPE);
+const SellerWallet = require('../models/sellerWalletModel');
+const Payment = require('../models/paymentModel');
+const Seller = require('../models/sellerModel');
+const WithDrawal = require('../models/withdrawalReqModel');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
+const { ObjectId } = require('mongoose').Types;
+const { v4: uuidv4 } = require('uuid');
+// const sellerUrl = "http://localhost:5174";
+const stripe = require('stripe')(process.env.SECRET_KEY_STRIPE);
 
 const sumAmount = (data) => {
   let sum = 0;
@@ -21,15 +20,21 @@ const sumAmount = (data) => {
 exports.createSellerStripeAccount = catchAsync(async (req, res, next) => {
   const uniqueId = uuidv4();
   try {
-    const paymentInfo = await Payment.findOne({ sellerId: req.user.id });
+    const paymentInfo = await Payment.findOne({
+      sellerId: req.user.id,
+    });
     if (paymentInfo) {
-      await Payment.deleteOne({ sellerId: req.user.id });
-      const account = await stripe.accounts.create({ type: "express" });
+      await Payment.deleteOne({
+        sellerId: req.user.id,
+      });
+      const account = await stripe.accounts.create({
+        type: 'express',
+      });
       const accountLink = await stripe.accountLinks.create({
         account: account.id,
         refresh_url: `https://seller-dashboard-iota.vercel.app/refresh`,
         return_url: `https://seller-dashboard-iota.vercel.app/success?activeCode=${uniqueId}`,
-        type: "account_onboarding",
+        type: 'account_onboarding',
       });
       await Payment.create({
         sellerId: req.user.id,
@@ -41,12 +46,14 @@ exports.createSellerStripeAccount = catchAsync(async (req, res, next) => {
         url: accountLink.url,
       });
     } else {
-      const account = await stripe.accounts.create({ type: "express" });
+      const account = await stripe.accounts.create({
+        type: 'express',
+      });
       const accountLink = await stripe.accountLinks.create({
         account: account.id,
         refresh_url: `https://seller-dashboard-iota.vercel.app/refresh`,
         return_url: `https://seller-dashboard-iota.vercel.app/success?activeCode=${uniqueId}`,
-        type: "account_onboarding",
+        type: 'account_onboarding',
       });
       await Payment.create({
         sellerId: req.user.id,
@@ -67,13 +74,15 @@ exports.activateAccount = catchAsync(async (req, res, next) => {
   const { activeCode } = req.params;
 
   try {
-    const userStripeInfo = await Payment.findOne({ code: activeCode });
+    const userStripeInfo = await Payment.findOne({
+      code: activeCode,
+    });
     if (userStripeInfo) {
       await Seller.findByIdAndUpdate(req.user.id, {
-        payment: "active",
+        payment: 'active',
       });
       res.status(201).json({
-        status: "Payment Activated",
+        status: 'Payment Activated',
       });
     } else {
       return next(new AppError(error.message, 400));
@@ -87,7 +96,9 @@ exports.getSellerPaymentDetails = catchAsync(async (req, res, next) => {
   const { sellerId } = req.params;
 
   try {
-    const payments = await SellerWallet.find({ sellerId });
+    const payments = await SellerWallet.find({
+      sellerId,
+    });
     const pendingWithdraws = await WithDrawal.find({
       $and: [
         {
@@ -97,7 +108,7 @@ exports.getSellerPaymentDetails = catchAsync(async (req, res, next) => {
         },
         {
           status: {
-            $eq: "pending",
+            $eq: 'pending',
           },
         },
       ],
@@ -112,7 +123,7 @@ exports.getSellerPaymentDetails = catchAsync(async (req, res, next) => {
         },
         {
           status: {
-            $eq: "success",
+            $eq: 'success',
           },
         },
       ],
@@ -128,7 +139,7 @@ exports.getSellerPaymentDetails = catchAsync(async (req, res, next) => {
       availableAmount = totalAmount - (pendingAmount + withdrawAmount);
     }
     res.status(201).json({
-      status: "Payment Activated",
+      status: 'Payment Activated',
       data: {
         totalAmount,
         pendingAmount,
@@ -153,7 +164,7 @@ exports.paymentRequest = catchAsync(async (req, res) => {
     });
 
     res.status(201).json({
-      status: "Successfully withdrawal",
+      status: 'Successfully withdrawal',
       data: {
         withdrawal,
       },
@@ -166,10 +177,10 @@ exports.paymentRequest = catchAsync(async (req, res) => {
 exports.getAdminPaymentRequest = catchAsync(async (req, res, next) => {
   try {
     const withdrawalRequest = await WithDrawal.find({
-      status: "pending",
+      status: 'pending',
     });
     res.status(201).json({
-      status: "Successfully withdrawal",
+      status: 'Successfully withdrawal',
       data: {
         withdrawalRequest,
       },
@@ -190,15 +201,15 @@ exports.adminConfirmPaymentRequest = catchAsync(async (req, res, next) => {
 
     await stripe.transfers.create({
       amount: payment.amount * 100,
-      currency: "usd",
+      currency: 'usd',
       destination: stripeId,
     });
 
     await WithDrawal.findByIdAndUpdate(paymentId, {
-      status: "success",
+      status: 'success',
     });
     res.status(201).json({
-      status: "Payment Confirmed",
+      status: 'Payment Confirmed',
       data: {
         payment,
       },

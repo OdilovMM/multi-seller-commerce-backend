@@ -1,8 +1,8 @@
-const Category = require("./../models/categoryModel");
-const catchAsync = require("./../utils/catchAsync");
-const AppError = require("./../utils/appError");
-const formidable = require("formidable");
-const cloudinary = require("cloudinary").v2;
+const Category = require('./../models/categoryModel');
+const catchAsync = require('./../utils/catchAsync');
+const AppError = require('./../utils/appError');
+const formidable = require('formidable');
+const cloudinary = require('cloudinary').v2;
 
 exports.addCategory = catchAsync(async (req, res, next) => {
   const form = formidable();
@@ -15,7 +15,7 @@ exports.addCategory = catchAsync(async (req, res, next) => {
       let { image } = files;
 
       name = name.trim();
-      const slug = name.split(" ").join("-");
+      const slug = name.split(' ').join('-');
 
       cloudinary.config({
         cloud_name: process.env.CLOUD_NAME,
@@ -25,7 +25,7 @@ exports.addCategory = catchAsync(async (req, res, next) => {
       });
       try {
         const result = await cloudinary.uploader.upload(image.filepath, {
-          folder: "categories",
+          folder: 'categories',
         });
         if (result) {
           const category = await Category.create({
@@ -34,10 +34,8 @@ exports.addCategory = catchAsync(async (req, res, next) => {
             image: result.url,
           });
 
-          console.log(category);
-
           res.status(201).json({
-            status: "Category Added",
+            status: 'Category Added',
             data: category,
           });
         } else {
@@ -53,7 +51,7 @@ exports.addCategory = catchAsync(async (req, res, next) => {
 exports.getAllCategories = catchAsync(async (req, res, next) => {
   const { page, search, parPage } = req.query;
   try {
-    let skipPage = "";
+    let skipPage = '';
     if (parPage && page) {
       skipPage = parseInt(parPage) * (parseInt(page) - 1);
     }
@@ -73,7 +71,7 @@ exports.getAllCategories = catchAsync(async (req, res, next) => {
         categories,
         totalCategories,
       });
-    } else if (search === "" && page && parPage) {
+    } else if (search === '' && page && parPage) {
       const categories = await Category.find({})
         .skip(skipPage)
         .limit(parPage)
@@ -101,11 +99,11 @@ exports.getCategory = catchAsync(async (req, res, next) => {
   const category = await Category.findById(req.params.id);
 
   if (!category) {
-    return next(new AppError("There is no any category with that ID", 404));
+    return next(new AppError('There is no any category with that ID', 404));
   }
 
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: {
       product: category,
     },
@@ -113,14 +111,12 @@ exports.getCategory = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteCategory = catchAsync(async (req, res, next) => {
-  console.log(req.params.categoryId);
   const category = await Category.findByIdAndDelete(req.params.categoryId);
-  console.log(category);
   if (!category) {
-    return next(new AppError("There is no any category with that ID", 404));
+    return next(new AppError('There is no any category with that ID', 404));
   }
   res.status(200).json({
-    status: "Category Deleted",
+    status: 'Category Deleted',
     data: {
       categoryId: category._id,
     },
@@ -134,15 +130,15 @@ exports.updateCategory = catchAsync(async (req, res, next) => {
     {
       new: true,
       runValidators: true,
-    }
+    },
   );
 
   if (!category) {
-    return next(new AppError("There is no any category with that ID", 404));
+    return next(new AppError('There is no any category with that ID', 404));
   }
 
   res.status(200).json({
-    status: "Category updated",
+    status: 'Category updated',
     data: {
       product: category,
     },

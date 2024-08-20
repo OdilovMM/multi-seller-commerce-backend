@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const withdrawReqSchema = new mongoose.Schema(
   {
@@ -12,13 +12,13 @@ const withdrawReqSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      default: "pending",
+      default: 'pending',
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-const WithdrawRequest = mongoose.model("WithdrawRequest", withdrawReqSchema);
+const WithdrawRequest = mongoose.model('WithdrawRequest', withdrawReqSchema);
 module.exports = WithdrawRequest;

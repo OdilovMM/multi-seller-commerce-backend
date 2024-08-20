@@ -1,61 +1,61 @@
-const express = require("express");
-const customerController = require("./../controllers/customerController");
+const express = require('express');
+const customerController = require('./../controllers/customerController');
 const router = express.Router();
 
-router.post("/user-register", customerController.userRegister);
-router.post("/user-login", customerController.userLogin);
+router.post('/user-register', customerController.userRegister);
+router.post('/user-login', customerController.userLogin);
 
-router.get("/get-all-customers", customerController.getAllCustomers);
+router.get('/get-all-customers', customerController.getAllCustomers);
 
 router.get(
-  "/get-me",
+  '/get-me',
   customerController.protect,
-  customerController.restrictTo("user"),
-  customerController.getMe
+  customerController.restrictTo('user'),
+  customerController.getMe,
 );
 
 router.get(
-  "/user-logout",
+  '/user-logout',
   customerController.protect,
-  customerController.restrictTo("user"),
-  customerController.userLogout
+  customerController.restrictTo('user'),
+  customerController.userLogout,
 );
 router.post(
-  "/add-remove-wishlist",
+  '/add-remove-wishlist',
   customerController.protect,
-  customerController.restrictTo("user"),
-  customerController.addRemoveWishList
+  customerController.restrictTo('user'),
+  customerController.addRemoveWishList,
 );
 router.post(
-  "/add-remove-cart",
+  '/add-remove-cart',
   customerController.protect,
-  customerController.restrictTo("user"),
-  customerController.addRemoveCart
+  customerController.restrictTo('user'),
+  customerController.addRemoveCart,
 );
 router.get(
-  "/get-my-wishlist",
+  '/get-my-wishlist',
   customerController.protect,
-  customerController.restrictTo("user"),
-  customerController.getMyWishlist
+  customerController.restrictTo('user'),
+  customerController.getMyWishlist,
 );
 router.get(
-  "/get-my-cart",
+  '/get-my-cart',
   customerController.protect,
-  customerController.restrictTo("user"),
-  customerController.getCustomerCart
+  customerController.restrictTo('user'),
+  customerController.getCustomerCart,
 );
 
 router.patch(
-  "/increment-cart-quantity/:productId",
+  '/increment-cart-quantity/:productId',
   customerController.protect,
-  customerController.restrictTo("user"),
-  customerController.incrementProductInCart
+  customerController.restrictTo('user'),
+  customerController.incrementProductInCart,
 );
 router.patch(
-  "/decrement-cart-quantity/:productId",
+  '/decrement-cart-quantity/:productId',
   customerController.protect,
-  customerController.restrictTo("user"),
-  customerController.decrementProductInCart
+  customerController.restrictTo('user'),
+  customerController.decrementProductInCart,
 );
 
 module.exports = router;
