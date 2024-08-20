@@ -49,12 +49,12 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: [
-      // "https://my-shop-ecommerce-nine.vercel.app", //front end
-      'http://localhost:5173',
-      'http://localhost:5174',
-      // "https://seller-dashboard-iota.vercel.app", //seller
-      'http://localhost:5175',
-      // "https://admin-dashboard-seven-rust-17.vercel.app", // admin dashboard
+      'https://my-shop-ecommerce-nine.vercel.app', //front end
+      // 'http://localhost:5173',
+      // 'http://localhost:5174',
+      'https://seller-dashboard-iota.vercel.app', //seller
+      // 'http://localhost:5175',
+      'https://admin-dashboard-seven-rust-17.vercel.app', // admin dashboard
     ],
     credentials: true,
   }),
