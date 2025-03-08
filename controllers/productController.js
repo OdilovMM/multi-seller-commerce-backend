@@ -414,8 +414,8 @@ exports.getProductsByPriceRange = catchAsync(async (req, res, next) => {
 });
 
 exports.getHomeProducts = catchAsync(async (req, res, next) => {
-  const topRatedProducts = await Product.find().sort({ rating: -1 }).limit(5);
-  const newArrivals = await Product.find().sort({ createdAt: -1 }).limit(5);
+  const topRatedProducts = await Product.find().sort({ rating: -1 }).limit(16);
+  const newArrivals = await Product.find().sort({ createdAt: -1 }).limit(16);
 
   res.status(200).json({
     status: 'success',
