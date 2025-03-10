@@ -1,116 +1,96 @@
-﻿# multi-seller-commerce-backend
-Multi-Seller Commerce Backend
+Overview of the Repository
 
-Overview
+The repository OdilovMM/multi-seller-commerce-backend contains the backend codebase for a multi-vendor e-commerce platform. This backend enables sellers to list products, customers to place orders, and administrators to manage the system. It is built using Node.js with Express.js and utilizes MongoDB for data storage. 
+GITHUB.COM
 
-This is a Node.js backend for a multi-vendor e-commerce platform. It enables sellers to list products, customers to place orders, and admins to manage the system. The backend is built using Express.js and MongoDB, with authentication, product management, order processing, and payment handling.
+Key Features
 
-Features
+User Authentication: Supports roles for Admin, Seller, and Customer, ensuring secure access control.
+Product Management: Allows sellers to manage products with multiple variations.
+Order Management: Facilitates order processing and tracking.
+Payment Processing: Integrates payment gateways for seamless transactions.
+Reviews and Ratings: Enables customers to provide feedback on products.
+Category Support: Organizes products into categories and subcategories for better navigation.
+Technologies Used
 
-User authentication (Admin, Seller, Customer)
+Backend Framework: Node.js with Express.js.
+Database: MongoDB, managed through Mongoose.
+Authentication: JSON Web Tokens (JWT) for secure user sessions.
+File Uploads: Handled by express-fileupload middleware.
+Getting Started
 
-Product management with multiple variations
+To set up the project locally, follow these steps:
 
-Order management and tracking
-
-Payment processing integration
-
-Reviews and ratings
-
-Category and subcategory support
-
-Tech Stack
-
-Backend: Node.js, Express.js
-
-Database: MongoDB, Mongoose
-
-Authentication: JWT (JSON Web Token)
-
-File Uploads: express-fileupload
-
-Payment Gateway: (Specify if applicable, e.g., Stripe, PayPal)
-
-Installation
-
-Prerequisites
-
-Ensure you have the following installed:
-
-Node.js
-
-MongoDB
-
-Steps to Install
-
-# Clone the repository
+Clone the Repository:
+bash
+Copy
+Edit
 git clone https://github.com/OdilovMM/multi-seller-commerce-backend.git
-
-# Navigate to the project directory
+GITHUB.COM
+Navigate to the Project Directory:
+bash
+Copy
+Edit
 cd multi-seller-commerce-backend
-
-# Install dependencies
+Install Dependencies:
+bash
+Copy
+Edit
 npm install
-
-# Create a .env file and configure environment variables
-cp .env.example .env
-
-Running the Project
-
-Start the Development Server
-
-npm run dev
-
-Start the Production Server
-
+Set Up Environment Variables: Create a .env file in the root directory and define the following variables:
+ini
+Copy
+Edit
+PORT=3000
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_secret_key
+Start the Server:
+bash
+Copy
+Edit
 npm start
+The server will run on the port specified in the .env file (default is 3000).
+Project Structure
 
-API Endpoints
+The project's structure is organized as follows:
 
-Authentication
-
-POST /api/auth/register - Register a new user
-
-POST /api/auth/login - Login user
-
-Products
-
-POST /api/products - Create a new product (Seller only)
-
-GET /api/products - Retrieve all products
-
-GET /api/products/:id - Get product by ID
-
-PUT /api/products/:id - Update a product (Seller only)
-
-DELETE /api/products/:id - Delete a product (Seller only)
-
-Orders
-
-POST /api/orders - Place an order
-
-GET /api/orders/:id - Get order details
-
-PUT /api/orders/:id/status - Update order status (Admin only)
-
-Reviews
-
-POST /api/reviews - Add a review
-
-GET /api/reviews/:productId - Get product reviews
-
-Environment Variables
-
-Create a .env file in the root directory and add the following variables:
-
-PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-
+pgsql
+Copy
+Edit
+multi-seller-commerce-backend/
+├── controllers/
+├── models/
+├── routes/
+├── utils/
+├── .eslintrc.json
+├── .gitignore
+├── .prettierrc
+├── README.md
+├── app.js
+├── package-lock.json
+├── package.json
+└── server.js
+controllers/: Contains logic for handling requests and responses.
+models/: Defines Mongoose schemas and models for data entities.
+routes/: Manages API endpoints and routing.
+utils/: Holds utility functions and middleware.
+app.js: Initializes the Express application.
+server.js: Starts the server and listens on the specified port.
 Contributing
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Contributions are welcome! To contribute:
 
+Fork the repository.
+Create a new branch: git checkout -b feature-branch-name.
+Make your changes and commit them: git commit -m 'Add new feature'.
+Push to the branch: git push origin feature-branch-name.
+Submit a pull request detailing your changes.
 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+Acknowledgements
+
+Special thanks to the open-source community and the contributors who have made this project possible.
+
+For more information, visit the live application and the frontend repository.
