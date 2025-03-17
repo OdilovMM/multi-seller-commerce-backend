@@ -77,6 +77,7 @@ app.use((req, res, next) => {
 });
 
 // 3) ROUTES
+// testing
 app.use('/api/v1/test-my-api', (req, res)=> {
   res.status(200).json({status: "success",message: 'This is an e-commerce rest api'})
 })
