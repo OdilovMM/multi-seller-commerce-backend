@@ -20,6 +20,7 @@ const orderRouter = require('./routes/orderRoutes');
 const bannerRouter = require('./routes/bannerRoutes');
 const paymentRouter = require('./routes/paymentRoutes');
 
+
 const app = express();
 app.enable('trust proxy')
 
@@ -50,9 +51,9 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: [
-      'https://my-shop-ecommerce-nine.vercel.app', //front end
-      // 'http://localhost:5173',
-      // 'http://localhost:5174',
+      // 'https://my-shop-ecommerce-nine.vercel.app', //front end
+      'http://localhost:5173',
+      'http://localhost:5174',
       'https://seller-dashboard-iota.vercel.app', //seller
       // 'http://localhost:5175',
       'https://admin-dashboard-seven-rust-17.vercel.app', // admin dashboard
@@ -76,6 +77,9 @@ app.use((req, res, next) => {
 });
 
 // 3) ROUTES
+app.use('/api/v1/test-my-api', (req, res)=> {
+  res.status(200).json({status: "success",message: 'This is an e-commerce rest api'})
+})
 app.use('/api/v1/admin', authAdminRouter);
 app.use('/api/v1/seller', sellerRouter);
 app.use('/api/v1/customer', customerRouter);

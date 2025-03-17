@@ -5,14 +5,12 @@ class queryProducts {
       this.products = products;
       this.query = query;
     }
-  
     queryCategory = () => {
       this.products = this.query.category
         ? this.products.filter((c) => c.category === this.query.category)
         : this.products;
       return this;
     };
-  
     queryRating = () => {
       this.products = this.query.rating
         ? this.products.filter(
@@ -23,7 +21,6 @@ class queryProducts {
         : this.products;
       return this;
     };
-  
     querySearch = () => {
       this.products = this.query.searchValue
         ? this.products.filter(
@@ -34,14 +31,12 @@ class queryProducts {
         : this.products;
       return this;
     };
-  
     queryPrice = () => {
       this.products = this.products.filter(
         (p) => p.price >= this.query.lowPrice && p.price <= this.query.highPrice
       );
       return this;
     };
-  
     querySortPrice = () => {
       if (this.query.sort) {
         if (this.query.sort === "low-to-high") {
@@ -56,7 +51,6 @@ class queryProducts {
       }
       return this;
     };
-  
     paginate = () => {
       let { currentPage } = this.query;
       const limit = (parseInt(currentPage) - 1) * this.query.parPage;
@@ -68,7 +62,6 @@ class queryProducts {
       this.products = skip;
       return this;
     };
-  
     limitField = () => {
       let temp = [];
       if (this.products.length > this.query.parPage) {
@@ -81,7 +74,6 @@ class queryProducts {
       this.products = temp;
       return this;
     };
-  
     getProducts = () => {
       return this.products;
     };
