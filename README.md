@@ -1,96 +1,89 @@
-Overview of the Repository
+### Multi-seller e-commerce from v1 to v2
 
-The repository OdilovMM/multi-seller-commerce-backend contains the backend codebase for a multi-vendor e-commerce platform. This backend enables sellers to list products, customers to place orders, and administrators to manage the system. It is built using Node.js with Express.js and utilizes MongoDB for data storage. 
-GITHUB.COM
+Tho whole project modified with folder structure, added Pino logger, Swagger UI docs for documentation, prepared entry folders and files, Service layer folder structure
 
-Key Features
+---
 
-User Authentication: Supports roles for Admin, Seller, and Customer, ensuring secure access control.
-Product Management: Allows sellers to manage products with multiple variations.
-Order Management: Facilitates order processing and tracking.
-Payment Processing: Integrates payment gateways for seamless transactions.
-Reviews and Ratings: Enables customers to provide feedback on products.
-Category Support: Organizes products into categories and subcategories for better navigation.
-Technologies Used
+### Techs and packages
 
-Backend Framework: Node.js with Express.js.
-Database: MongoDB, managed through Mongoose.
-Authentication: JSON Web Tokens (JWT) for secure user sessions.
-File Uploads: Handled by express-fileupload middleware.
-Getting Started
+- "bcrypt": "^5.1.1",
+- "bcryptjs": "^2.4.3",
+- "body-parser": "^1.20.2",
+- "chalk": "^4.1.2",
+- "cloudinary": "^2.2.0",
+- "compression": "^1.7.4",
+- "cookie-parser": "^1.4.6",
+- "cors": "^2.8.5",
+- "dotenv": "^16.4.5",
+- "express": "^4.19.2",
+- "express-mongo-sanitize": "^2.2.0",
+- "express-rate-limit": "^7.3.0",
+- "formidable": "^2.1.1",
+- "helmet": "^7.1.0",
+- "hpp": "^0.2.3",
+- "http-status-codes": "^2.3.0",
+- "joi": "^18.0.1",
+- "jsonwebtoken": "^9.0.2",
+- "moment": "^2.30.1",
+- "mongoose": "^8.4.1",
+- "morgan": "^1.10.0",
+- "nodemailer": "^6.9.13",
+- "nodemon": "^3.1.4",
+- "pino": "^9.9.0",
+- "pino-http": "^10.5.0",
+- "pino-pretty": "^13.1.1",
+- "slugify": "^1.6.6",
+- "socket.io": "^4.7.5",
+- "stripe": "^15.8.0",
+- "swagger-jsdoc": "^6.2.8",
+- "swagger-stats": "^0.99.7",
+- "swagger-ui-express": "^5.0.1",
+- "uuid": "^9.0.1",
+- "validator": "^13.12.0",
+- "xss-clean": "^0.1.4"
 
-To set up the project locally, follow these steps:
+---
 
-Clone the Repository:
-bash
-Copy
-Edit
-git clone https://github.com/OdilovMM/multi-seller-commerce-backend.git
-GITHUB.COM
-Navigate to the Project Directory:
-bash
-Copy
-Edit
-cd multi-seller-commerce-backend
-Install Dependencies:
-bash
-Copy
-Edit
-npm install
-Set Up Environment Variables: Create a .env file in the root directory and define the following variables:
-ini
-Copy
-Edit
-PORT=3000
-MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_secret_key
-Start the Server:
-bash
-Copy
-Edit
-npm start
-The server will run on the port specified in the .env file (default is 3000).
-Project Structure
+### Folder Structure Projects
 
-The project's structure is organized as follows:
+##NODEJS
 
-pgsql
-Copy
-Edit
-multi-seller-commerce-backend/
-├── controllers/
-├── models/
-├── routes/
-├── utils/
+├── config
+
+├── controllers
+
+├── db
+
+├── errors
+
+├── lib
+
+├── middleware
+
+├── models
+
+├── node_modules
+
+├── routes
+
+├── services
+
+├── utils
+
+├── validations
+
+├── .env
+
 ├── .eslintrc.json
+
 ├── .gitignore
+
 ├── .prettierrc
-├── README.md
+
 ├── app.js
+
 ├── package-lock.json
+
 ├── package.json
-└── server.js
-controllers/: Contains logic for handling requests and responses.
-models/: Defines Mongoose schemas and models for data entities.
-routes/: Manages API endpoints and routing.
-utils/: Holds utility functions and middleware.
-app.js: Initializes the Express application.
-server.js: Starts the server and listens on the specified port.
-Contributing
 
-Contributions are welcome! To contribute:
-
-Fork the repository.
-Create a new branch: git checkout -b feature-branch-name.
-Make your changes and commit them: git commit -m 'Add new feature'.
-Push to the branch: git push origin feature-branch-name.
-Submit a pull request detailing your changes.
-License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
-
-Acknowledgements
-
-Special thanks to the open-source community and the contributors who have made this project possible.
-
-For more information, visit the live application and the frontend repository.
+└── README.md
