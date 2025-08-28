@@ -1,4 +1,4 @@
-const Category = require('./../models/categoryModel');
+const Category = require('../models/category.model');
 const catchAsync = require('../utils/asyncErrorHandler');
 const AppError = require('./../utils/appError');
 const formidable = require('formidable');

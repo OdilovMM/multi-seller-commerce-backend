@@ -12,28 +12,29 @@ const xss = require('xss-clean');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const compression = require('compression');
-const notFoundMiddleware = require('./middleware/not-found-route')
+const notFoundMiddleware = require('./middleware/not-found-route');
 const errorHandlerMiddleware = require('./middleware/error-handler');
 const connectDB = require('./db/connect');
+const swaggerDocs = require('./utils/swagger');
 const httpLogger = pinoHttp({ logger });
 logger.info('[App.js]: Application started');
 
 const app = express();
 
 app.use(httpLogger);
-
+swaggerDocs(app);
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(helmet());
 
 if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
+	app.use(morgan('dev'));
 }
 
 const limiter = rateLimit({
-  max: 10000,
-  windowMs: 60 * 60 * 1000,
-  message: 'Too many requests from this IP, please try again in an hour!',
+	max: 10000,
+	windowMs: 60 * 60 * 1000,
+	message: 'Too many requests from this IP, please try again in an hour!',
 });
 
 app.use('/api', limiter);
@@ -43,12 +44,10 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 
 app.use(
-  cors({
-    origin: [
-      'http://localhost:5173',
-    ],
-    credentials: true,
-  }),
+	cors({
+		origin: ['http://localhost:5173'],
+		credentials: true,
+	}),
 );
 
 app.use(mongoSanitize());
@@ -56,12 +55,8 @@ app.use(xss());
 app.use(compression());
 
 app.use((req, res, next) => {
-  req.requestTime = new Date().toISOString();
-  next();
-});
-
-app.all('*', (req, res, next) => {
-  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+	req.requestTime = new Date().toISOString();
+	next();
 });
 
 // Routes
@@ -75,10 +70,13 @@ const bootstrap = async () => {
 	try {
 		const PORT = process.env.PORT || 5005;
 		await connectDB(process.env.MONGO_URI);
-		app.listen(PORT, () => logger.info(`[App.js] Server running on port ${PORT}`));
+		app.listen(PORT, () => {
+			logger.info(`[App.js] Server running on port ${PORT}`);
+			logger.info(`[App.js] Swagger docs running on port http://localhost:5000/api-docs`);
+		});
 	} catch (error) {
-		logger.error(`[Server error occured in init]`, error)
+		logger.error(`[Server error occured in init]`, error);
 	}
 };
 
-bootstrap()
+bootstrap();

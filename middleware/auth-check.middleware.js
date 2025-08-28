@@ -1,5 +1,11 @@
-exports.protect = catchAsync(async (req, res, next) => {
-  // 1) Getting token and check of it's there
+const jwt = require("jsonwebtoken");
+const { promisify } = require("util");
+const User = require("../models/user.model");
+const asyncErrorHandler = require('../utils/asyncErrorHandler');
+const { UnauthorizedError, NotFoundError } = require("../errors");
+
+
+exports.protect = asyncErrorHandler(async (req, res, next) => {
   let token;
   if (
     req.headers.authorization &&
@@ -10,25 +16,19 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   if (!token) {
     return next(
-      new AppError('You are not logged in! Please log in to get access.', 401),
+      new UnauthorizedError('You are not logged in! Please log in to get access.')
     );
   }
 
-  // 2) Verification token
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_ACCESS_SECRET);
 
-  // 3) Check if user still exists
-  const currentUser = await Admin.findById(decoded.id);
+  const currentUser = await User.findById(decoded.id);
   if (!currentUser) {
     return next(
-      new AppError(
-        'The user belonging to this token does no longer exist.',
-        401,
-      ),
+      new NotFoundError('The user belonging to this token no longer exists.')
     );
   }
 
-  // GRANT ACCESS TO PROTECTED ROUTE
   req.user = currentUser;
   next();
 });

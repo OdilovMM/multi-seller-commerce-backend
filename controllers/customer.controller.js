@@ -1,11 +1,11 @@
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
-const Customer = require('../models/customerModel');
-const Seller = require('../models/sellerModel');
-const Wishlist = require('../models/wishlistModel');
-const Cart = require('../models/cartModel');
-const Product = require('../models/productModel');
-const Category = require('../models/categoryModel');
+const Customer = require('../models/customer.model');
+const Seller = require('../models/seller.model');
+const Wishlist = require('../models/wishlist.model');
+const Cart = require('../models/cart.model');
+const Product = require('../models/product.model');
+const Category = require('../models/category.model');
 const catchAsync = require('../utils/asyncErrorHandler');
 const AppError = require('../utils/appError');
 const { ObjectId } = require('mongoose').Types;

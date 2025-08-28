@@ -1,5 +1,5 @@
-const Product = require('./../models/productModel');
-const Banner = require('./../models/bannerModel');
+const Product = require('../models/product.model');
+const Banner = require('../models/banner.model');
 const catchAsync = require('../utils/asyncErrorHandler');
 const AppError = require('./../utils/appError');
 const formidable = require('formidable');

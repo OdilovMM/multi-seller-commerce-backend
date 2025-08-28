@@ -1,14 +1,14 @@
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
-const Seller = require('../models/sellerModel');
+const Seller = require('../models/seller.model');
 const catchAsync = require('../utils/asyncErrorHandler');
 const AppError = require('../utils/appError');
 const { ObjectId } = require('mongoose').Types;
 
 // dashboard related
-const SellerWallet = require('../models/sellerWalletModel');
-const Product = require('../models/productModel');
-const AuthOrder = require('../models/authOrderModel');
+const SellerWallet = require('../models/seller-wallet.model');
+const Product = require('../models/product.model');
+const AuthOrder = require('../models/auth-order.model');
 
 const cloudinary = require('cloudinary').v2;
 const formidable = require('formidable');

@@ -1,9 +1,9 @@
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
-const Admin = require('../models/adminModel');
+const Admin = require('../models/admin.model');
 // dashboard related
-const CustomerOrders = require('../models/customerOrderModel');
-const MyWallet = require('../models/myWalletModel');
+const CustomerOrders = require('../models/customer-order.model');
+const MyWallet = require('../models/my-wallet.model');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/asyncErrorHandler');
 

@@ -1,6 +1,6 @@
 const router = require('express').Router();
 
-// router.use('/auth', require('./auth'));
+router.use('/auth', require('./auth.routes'));
 // router.use('/admin', require('./admin.routes'));
 // router.use('/vendor', require('./sellerRoutes'));
 // router.use('/customer', require('./customerRoutes'));

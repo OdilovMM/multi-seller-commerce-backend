@@ -1,8 +1,8 @@
-const CustomerOrder = require('../models/customerOrderModel');
-const AuthOrder = require('../models/authOrderModel');
-const Cart = require('../models/cartModel');
-const MyWallet = require('../models/myWalletModel');
-const SellerWallet = require('../models/sellerWalletModel');
+const CustomerOrder = require('../models/customer-order.model');
+const AuthOrder = require('../models/auth-order.model');
+const Cart = require('../models/cart.model');
+const MyWallet = require('../models/my-wallet.model');
+const SellerWallet = require('../models/seller-wallet.model');
 const catchAsync = require('../utils/asyncErrorHandler');
 const AppError = require('../utils/appError');
 const { ObjectId } = require('mongoose').Types;
