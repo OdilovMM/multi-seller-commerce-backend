@@ -1,3 +1,14 @@
 {
-  "singleQuote": true
+  "singleQuote": true,
+  "trailingComma": "all",
+  "semi": true,
+  "useTabs": true,
+  "editor.formatOnSave": true,
+  "jsxSingleQuote": true,
+  "printWidth": 100,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true
+  },
+  "prettier.arrowParens": "avoid",
+  "endOfLine": "auto"
 }
