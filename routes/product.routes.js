@@ -1,86 +1,39 @@
+const logger = require('../utils/logger');
 const express = require('express');
-const sellerController = require('../controllers/seller.controller');
-const productController = require('./../controllers/productController');
-const customerController = require('../controllers/customer.controller');
-const authAdminController = require('../controllers/admin.controller');
+const productController = require('./../controllers/product.controller');
+const { protect } = require('../middleware/auth-check.middleware');
+const authorize = require('../middleware/role-check.middleware');
+const validateRequest = require('../middleware/validate.middleware');
+const { createProductSchema, updateProductSchema } = require('../validations/product.validation');
+
+logger.info('[product.routes.js] Product route is working');
+
 const router = express.Router();
 
+// Seller only routes
 router.post(
-  '/add-product',
-  sellerController.protect,
-  sellerController.restrictTo('seller'),
-  productController.addProduct,
+	'/',
+	protect,
+	authorize('VENDOR'),
+	validateRequest(createProductSchema),
+	productController.create,
 );
-
-router.get('/get-product-detail/:slug', productController.getSingleProduct);
-router.get(
-  '/get-product-detail-to-admin/:productId',
-  productController.getSingleProductToAdmin,
-);
-
-router.get(
-  '/get-product-to-edit/:productId',
-  productController.getProductToEdit,
-);
-
-router.delete(
-  '/delete-product/:productId',
-  sellerController.protect,
-  sellerController.restrictTo('seller'),
-  productController.deleteProduct,
-);
-
 router.patch(
-  '/update-product',
-  sellerController.protect,
-  sellerController.restrictTo('seller'),
-  productController.updateProduct,
+	'/:productId',
+	protect,
+	authorize('VENDOR'),
+	validateRequest(updateProductSchema),
+	productController.update,
 );
+router.patch('/:productId/image', protect, authorize('VENDOR'), productController.updateImage);
+router.delete('/:productId', protect, authorize('VENDOR'), productController.delete);
+router.get('/my-products', protect, authorize('VENDOR'), productController.listSellerProducts);
 
-router.patch(
-  '/update-product-image',
-  sellerController.protect,
-  sellerController.restrictTo('seller'),
-  productController.updateProductImage,
-);
-
-router.post(
-  '/add-product-review/:productId',
-  productController.addProductReview,
-);
-
-router.get(
-  '/get-product-review/:productId',
-  productController.getAllProductReviews,
-);
-
-router.get(
-  '/get-products-by-price-range',
-  productController.getProductsByPriceRange,
-);
-
-router.get('/get-home-products', productController.getHomeProducts);
-
-router.get('/product-query', productController.getProductQuery);
-
-router.get(
-  '/get-all-my-products',
-  sellerController.protect,
-  sellerController.restrictTo('seller'),
-  productController.getAllMyProductsSeller,
-);
-
-router.get('/get-all-admin-products', productController.getAllAdminProducts);
-
-router.get('/:type', productController.getProductsByType);
-
-router.post(
-  '/add-customer-product-review',
-  customerController.protect,
-  customerController.restrictTo('user'),
-  productController.addProductReview,
-);
-
-router.get('/get-all-reviews/:productId', productController.getAllReviews);
+// Public routes
+router.get('/', productController.search); // filter, sort, pagination
+router.get('/price-range', productController.listByPriceRange);
+router.get('/home', productController.listHomeProducts);
+router.get('/:slug', productController.getBySlug);
+router.get('/:type', productController.listByType);
 
 module.exports = router;

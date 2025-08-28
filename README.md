@@ -1,6 +1,6 @@
-### CategoryController, CategoryService and CategoryRoutes
+### ReviewController, ReviewService and ReviewRoutes
 
-Implemented Register, Login, Logout functionality with Joi validation, completed access and refresh token
+Implemented all crud functionality with Joi validation, completed SwaggerUI docs
 
 ---
 
