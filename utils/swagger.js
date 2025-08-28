@@ -8,6 +8,11 @@ const options = {
 			title: 'API Documentation',
 			version: '1.0.0',
 		},
+		servers: [
+			{
+				url: 'http://localhost:5000',
+			},
+		],
 	},
 	apis: ['./docs/*.swagger.js'],
 };

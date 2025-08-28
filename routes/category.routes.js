@@ -1,27 +1,43 @@
+const logger = require('../utils/logger');
 const express = require('express');
-const authAdminController = require('../controllers/admin.controller');
-const categoryController = require('./../controllers/categoryController');
+const categoryController = require('./../controllers/category.controller');
+const { protect } = require('../middleware/auth-check.middleware');
+const authorize = require('../middleware/role-check.middleware');
+const validateRequest = require('../middleware/validate.middleware');
+const {
+	createCategorySchema,
+	updateCategorySchema,
+} = require('../validations/category.validation');
+
+logger.info('[category.routes.js] Category route is working');
+
 const router = express.Router();
 
+// Create category (admin only)
 router.post(
-  '/add-category',
-  authAdminController.protect,
-  authAdminController.restrictTo('admin'),
-  categoryController.addCategory,
+	'/',
+	protect,
+	authorize('ADMIN'),
+	validateRequest(createCategorySchema),
+	categoryController.createCategory,
 );
-router.get('/get-all-categories', categoryController.getAllCategories);
-router.get('/get-all-category/:categoryId', categoryController.getCategory);
-router.delete(
-  '/delete-category/:categoryId',
-  authAdminController.protect,
-  authAdminController.restrictTo('admin'),
-  categoryController.deleteCategory,
-);
+
+// Get all categories
+router.get('/', categoryController.getCategories);
+
+// Get single category
+router.get('/:id', categoryController.getCategoryById);
+
+// Update category (admin only)
 router.patch(
-  '/update-category/:categoryId',
-  authAdminController.protect,
-  authAdminController.restrictTo('admin'),
-  categoryController.updateCategory,
+	'/:id',
+	protect,
+	authorize('ADMIN'),
+	validateRequest(updateCategorySchema),
+	categoryController.updateCategory,
 );
+
+// Delete category (admin only)
+router.delete('/:id', protect, authorize('ADMIN'), categoryController.deleteCategory);
 
 module.exports = router;

@@ -38,7 +38,7 @@
  *         password:
  *           type: string
  *
- * /auth/register:
+ * /api/v2/auth/register:
  *   post:
  *     summary: Register a new user
  *     tags: [Auth]
@@ -52,7 +52,7 @@
  *       201:
  *         description: User registered successfully
  *
- * /auth/login:
+ * /api/v2/auth/login:
  *   post:
  *     summary: Login user
  *     tags: [Auth]
@@ -66,7 +66,7 @@
  *       200:
  *         description: Login successful
  *
- * /auth/logout:
+ * /api/v2/auth/logout:
  *   get:
  *     summary: Logout user
  *     tags: [Auth]

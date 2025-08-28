@@ -1,42 +1,41 @@
 const Cart = require('../models/cartModel');
-const catchAsync = require('../utils/asyncErrorHandler');
-const AppError = require('./../utils/appError');
+const asyncErrorHandler = require('../utils/asyncErrorHandler');
 
-exports.addProductToCart = catchAsync(async (req, res, next) => {
-  const { userId, productId, quantity } = req.body;
-  try {
-    const product = await Cart.findOne({
-      $and: [
-        {
-          productId: {
-            $eq: productId,
-          },
-        },
-        {
-          userId: {
-            $eq: userId,
-          },
-        },
-      ],
-    });
+exports.addProductToCart = asyncErrorHandler(async (req, res, next) => {
+	const { userId, productId, quantity } = req.body;
+	try {
+		const product = await Cart.findOne({
+			$and: [
+				{
+					productId: {
+						$eq: productId,
+					},
+				},
+				{
+					userId: {
+						$eq: userId,
+					},
+				},
+			],
+		});
 
-    if (product) {
-      return next(new AppError('Already Added To Card', 404));
-    } else {
-      const product = await Cart.create({
-        userId,
-        productId,
-        quantity,
-      });
-      res.status(201).json({
-        status: 'Product Added',
-        token,
-        data: {
-          product,
-        },
-      });
-    }
-  } catch (error) {
-    return next(new AppError(error.message, 500));
-  }
+		if (product) {
+			return next(new AppError('Already Added To Card', 404));
+		} else {
+			const product = await Cart.create({
+				userId,
+				productId,
+				quantity,
+			});
+			res.status(201).json({
+				status: 'Product Added',
+				token,
+				data: {
+					product,
+				},
+			});
+		}
+	} catch (error) {
+		return next(new AppError(error.message, 500));
+	}
 });

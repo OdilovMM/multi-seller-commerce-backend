@@ -1,4 +1,4 @@
-### AuthController & AuthService
+### CategoryController, CategoryService and CategoryRoutes
 
 Implemented Register, Login, Logout functionality with Joi validation, completed access and refresh token
 

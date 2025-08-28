@@ -1,146 +1,58 @@
-const Category = require('../models/category.model');
-const catchAsync = require('../utils/asyncErrorHandler');
-const AppError = require('./../utils/appError');
+const asyncErrorHandler = require('../utils/asyncErrorHandler');
+const CategoryService = require('../services/category.service');
 const formidable = require('formidable');
-const cloudinary = require('cloudinary').v2;
 
-exports.addCategory = catchAsync(async (req, res, next) => {
-  const form = formidable();
+class CategoryController {
+	// POST /api/categories
+	createCategory = asyncErrorHandler(async (req, res, next) => {
+		const form = formidable();
+		form.parse(req, async (error, fields, files) => {
+			if (error) return next(error);
 
-  form.parse(req, async (error, fields, files) => {
-    if (error) {
-      return next(new AppError(error.message, 404));
-    } else {
-      let { name } = fields;
-      let { image } = files;
+			const category = await CategoryService.createCategory(fields, files);
+			res.status(201).json({
+				status: 'success',
+				data: category,
+			});
+		});
+	});
 
-      name = name.trim();
-      const slug = name.split(' ').join('-');
+	// GET /api/categories
+	getCategories = asyncErrorHandler(async (req, res) => {
+		const result = await CategoryService.getCategories(req.query);
+		res.status(200).json({
+			status: 'success',
+			...result,
+		});
+	});
 
-      cloudinary.config({
-        cloud_name: process.env.CLOUD_NAME,
-        api_key: process.env.CLOUD_API_KEY,
-        api_secret: process.env.CLOUD_API_SECRET,
-        secure: true,
-      });
-      try {
-        const result = await cloudinary.uploader.upload(image.filepath, {
-          folder: 'categories',
-        });
-        if (result) {
-          const category = await Category.create({
-            name,
-            slug,
-            image: result.url,
-          });
+	// GET /api/categories/:id
+	getCategoryById = asyncErrorHandler(async (req, res) => {
+		const category = await CategoryService.getCategoryById(req.params.id);
+		res.status(200).json({
+			status: 'success',
+			data: category,
+		});
+	});
 
-          res.status(201).json({
-            status: 'Category Added',
-            data: category,
-          });
-        } else {
-          return next(new AppError(error.message, 404));
-        }
-      } catch (error) {
-        return next(new AppError(error.message, 500));
-      }
-    }
-  });
-});
+	// DELETE /api/categories/:id
+	deleteCategory = asyncErrorHandler(async (req, res) => {
+		const deletedId = await CategoryService.deleteCategory(req.params.id);
+		res.status(200).json({
+			status: 'success',
+			message: 'Category deleted successfully',
+			data: { id: deletedId },
+		});
+	});
 
-exports.getAllCategories = catchAsync(async (req, res, next) => {
-  const { page, search, parPage } = req.query;
-  try {
-    let skipPage = '';
-    if (parPage && page) {
-      skipPage = parseInt(parPage) * (parseInt(page) - 1);
-    }
+	// PATCH /api/categories/:id
+	updateCategory = asyncErrorHandler(async (req, res) => {
+		const category = await CategoryService.updateCategory(req.params.id, req.body);
+		res.status(200).json({
+			status: 'success',
+			data: category,
+		});
+	});
+}
 
-    if (search && page && parPage) {
-      const categories = await Category.find({
-        $text: { $search: search },
-      })
-        .skip(skipPage)
-        .limit(parPage)
-        .sort({ createdAt: -1 });
-
-      const totalCategories = await Category.find({
-        $text: { $search: search },
-      }).countDocuments();
-      res.status(200).json({
-        categories,
-        totalCategories,
-      });
-    } else if (search === '' && page && parPage) {
-      const categories = await Category.find({})
-        .skip(skipPage)
-        .limit(parPage)
-        .sort({ createdAt: -1 });
-
-      const totalCategories = await Category.find({}).countDocuments();
-
-      res.status(200).json({
-        categories,
-        totalCategories,
-      });
-    } else {
-      const categories = await Category.find({}).sort({ createdAt: -1 });
-      const totalCategories = await Category.find({}).countDocuments();
-      res.status(200).json({
-        categories,
-        totalCategories,
-      });
-    }
-  } catch (error) {
-    return next(new AppError(error.message, 500));
-  }
-});
-exports.getCategory = catchAsync(async (req, res, next) => {
-  const category = await Category.findById(req.params.id);
-
-  if (!category) {
-    return next(new AppError('There is no any category with that ID', 404));
-  }
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      product: category,
-    },
-  });
-});
-
-exports.deleteCategory = catchAsync(async (req, res, next) => {
-  const category = await Category.findByIdAndDelete(req.params.categoryId);
-  if (!category) {
-    return next(new AppError('There is no any category with that ID', 404));
-  }
-  res.status(200).json({
-    status: 'Category Deleted',
-    data: {
-      categoryId: category._id,
-    },
-  });
-});
-
-exports.updateCategory = catchAsync(async (req, res, next) => {
-  const category = await Category.findByIdAndUpdate(
-    req.params.categoryId,
-    req.body,
-    {
-      new: true,
-      runValidators: true,
-    },
-  );
-
-  if (!category) {
-    return next(new AppError('There is no any category with that ID', 404));
-  }
-
-  res.status(200).json({
-    status: 'Category updated',
-    data: {
-      product: category,
-    },
-  });
-});
+module.exports = new CategoryController();
