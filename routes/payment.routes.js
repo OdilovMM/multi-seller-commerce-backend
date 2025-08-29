@@ -1,46 +1,44 @@
 const express = require('express');
-const paymentController = require('../controllers/payment.controller');
-const sellerController = require('../controllers/seller.controller');
-const authAdminController = require('../controllers/admin.controller');
 const router = express.Router();
+const PaymentController = require('../controllers/payment.controller');
+const { protect } = require('../middleware/auth-check.middleware');
+const authorize = require('../middleware/role-check.middleware');
+const logger = require('../utils/logger');
+logger.info('[payment.routes.js] Payment routes loaded');
+router.use(protect);
 
-router.get(
-  '/create-seller-stripe-account',
-  sellerController.protect,
-  sellerController.restrictTo('seller'),
-  paymentController.createSellerStripeAccount,
+// Seller routes
+router.post(
+	'/seller/create-stripe-account',
+	authorize('seller'),
+	PaymentController.createSellerStripeAccount,
 );
 
 router.patch(
-  '/activate-seller-stripe-account/:activeCode',
-  sellerController.protect,
-  sellerController.restrictTo('seller'),
-  paymentController.activateAccount,
+	'/seller/activate-stripe/:activeCode',
+	authorize('seller'),
+	PaymentController.activateAccount,
 );
 
 router.get(
-  '/get-seller-payment-details/:sellerId',
-  sellerController.protect,
-  paymentController.getSellerPaymentDetails,
+	'/seller/payment-details/:sellerId',
+	authorize('seller'),
+	PaymentController.getSellerPaymentDetails,
 );
 
-router.post(
-  '/send-withdrawal-request',
-  sellerController.protect,
-  paymentController.paymentRequest,
-);
+router.post('/seller/withdrawal-request', authorize('seller'), PaymentController.paymentRequest);
 
-// admin related payments operations
-
+// Admin routes
 router.get(
-  '/get-admin-payment-request',
-  authAdminController.protect,
-  paymentController.getAdminPaymentRequest,
+	'/admin/pending-withdrawals',
+	authorize('admin'),
+	PaymentController.getAdminPaymentRequest,
 );
 
-router.put(
-  '/admin-confirm-payment-request',
-  authAdminController.protect,
-  paymentController.adminConfirmPaymentRequest,
+router.patch(
+	'/admin/confirm-withdrawal',
+	authorize('admin'),
+	PaymentController.adminConfirmPaymentRequest,
 );
+
 module.exports = router;

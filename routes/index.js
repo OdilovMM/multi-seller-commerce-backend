@@ -8,7 +8,8 @@ router.use('/admin', require('./admin.routes'));
 router.use('/banner', require('./banner.routes'));
 router.use('/customer', require('./customer.routes'));
 router.use('/vendor', require('./seller.routes'));
-// router.use('/order', require('./orderRoutes'));
-// router.use('/payment', require('./payment.routes'));
+router.use('/cart', require('./cart.routes'));
+router.use('/order', require('./order.routes'));
+router.use('/payment', require('./payment.routes'));
 
 module.exports = router;

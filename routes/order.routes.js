@@ -1,39 +1,96 @@
 const express = require('express');
-const orderController = require('../controllers/order.controller');
 const router = express.Router();
+const orderController = require('../controllers/order.controller');
+const { protect } = require('../middleware/auth-check.middleware');
+const authorize = require('../middleware/role-check.middleware');
+const logger = require('../utils/logger');
 
-// Customer Related Orders
+// ========================================
+// Logger - route file load
+// ========================================
+logger.info('[order.routes.js] Order routes loaded');
 
-router.post('/place-order', orderController.placeNewOrder);
-router.get('/get-orders/:userId/:status', orderController.getAllOrdersByStatus);
-router.get('/get-order-detail/:orderId', orderController.getOrderDetail);
-router.post('/create-payment', orderController.customerOrderMake);
-router.get('/confirm/:orderId', orderController.orderConfirm);
+// ========================================
+// CUSTOMER ROUTES
+// ========================================
+router.post('/customer/orders', protect, authorize('CUSTOMER'), orderController.placeNewOrder);
+
 router.get(
-  '/get-dashboard-data/:userId',
-  orderController.getCustomerDashboardData,
+	'/customer/orders/:userId',
+	protect,
+	authorize('CUSTOMER'),
+	orderController.getAllOrdersByStatus,
 );
 
-// Seller related orders
-router.get('/get-seller-order/:sellerId', orderController.getSellerOrders);
 router.get(
-  '/get-seller-single-order-detail/:orderId',
-  orderController.getSellerSingleOrderDetail,
+	'/customer/orders/detail/:orderId',
+	protect,
+	authorize('CUSTOMER'),
+	orderController.getOrderDetail,
 );
+
+router.post(
+	'/customer/orders/payment',
+	protect,
+	authorize('CUSTOMER'),
+	orderController.customerOrderMake,
+);
+
+router.get(
+	'/customer/orders/:orderId/confirm',
+	protect,
+	authorize('CUSTOMER'),
+	orderController.orderConfirm,
+);
+
+router.get(
+	'/customer/dashboard/:userId',
+	protect,
+	authorize('CUSTOMER'),
+	orderController.getCustomerDashboardData,
+);
+
+// ========================================
+// SELLER ROUTES
+// ========================================
+router.get(
+	'/seller/orders/:sellerId',
+	protect,
+	authorize('VENDOR'),
+	orderController.getSellerOrders,
+);
+
+router.get(
+	'/seller/orders/detail/:orderId',
+	protect,
+	authorize('VENDOR'),
+	orderController.getSellerSingleOrderDetail,
+);
+
 router.patch(
-  '/seller-update-order-status/:orderId',
-  orderController.sellerOrderUpdateStatus,
+	'/seller/orders/:orderId/status',
+	protect,
+	authorize('VENDOR'),
+	orderController.sellerOrderUpdateStatus,
 );
 
-// Admin Related Orders
-router.get('/get-admin-order', orderController.getAdminOrders);
+// ========================================
+// ADMIN ROUTES
+// ========================================
+router.get('/admin/orders', protect, authorize('ADMIN'), orderController.getAdminOrders);
+
 router.get(
-  '/get-admin-single-order-detail/:orderId',
-  orderController.getSingleOrderDetail,
+	'/admin/orders/detail/:orderId',
+	protect,
+	authorize('ADMIN'),
+	orderController.getSingleOrderDetail,
 );
+
 router.patch(
-  '/admin-update-order-status/:orderId',
-  orderController.adminOrderUpdateStatus,
+	'/admin/orders/:orderId/status',
+	protect,
+	authorize('ADMIN'),
+	orderController.adminOrderUpdateStatus,
 );
 
 module.exports = router;

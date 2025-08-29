@@ -1,218 +1,35 @@
-const SellerWallet = require('../models/sellerWalletModel');
-const Payment = require('../models/paymentModel');
-const Seller = require('../models/sellerModel');
-const WithDrawal = require('../models/withdrawalReqModel');
+const PaymentService = require('../services/payment.service');
 const asyncErrorHandler = require('../utils/asyncErrorHandler');
-const { ObjectId } = require('mongoose').Types;
-const { v4: uuidv4 } = require('uuid');
-const stripe = require('stripe')(process.env.SECRET_KEY_STRIPE);
-
-const sumAmount = (data) => {
-	let sum = 0;
-	for (let i = 0; i < data.length; i++) {
-		sum = sum + data[i].amount;
-	}
-	return sum;
-};
+const { NotFoundError } = require('../errors');
 
 exports.createSellerStripeAccount = asyncErrorHandler(async (req, res, next) => {
-	const uniqueId = uuidv4();
-	try {
-		const paymentInfo = await Payment.findOne({
-			sellerId: req.user.id,
-		});
-		if (paymentInfo) {
-			await Payment.deleteOne({
-				sellerId: req.user.id,
-			});
-			const account = await stripe.accounts.create({
-				type: 'express',
-			});
-			const accountLink = await stripe.accountLinks.create({
-				account: account.id,
-				refresh_url: `https://seller-dashboard-iota.vercel.app/refresh`,
-				return_url: `https://seller-dashboard-iota.vercel.app/success?activeCode=${uniqueId}`,
-				type: 'account_onboarding',
-			});
-			await Payment.create({
-				sellerId: req.user.id,
-				stripeId: account.id,
-				code: uniqueId,
-			});
-
-			res.status(201).json({
-				url: accountLink.url,
-			});
-		} else {
-			const account = await stripe.accounts.create({
-				type: 'express',
-			});
-			const accountLink = await stripe.accountLinks.create({
-				account: account.id,
-				refresh_url: `https://seller-dashboard-iota.vercel.app/refresh`,
-				return_url: `https://seller-dashboard-iota.vercel.app/success?activeCode=${uniqueId}`,
-				type: 'account_onboarding',
-			});
-			await Payment.create({
-				sellerId: req.user.id,
-				stripeId: account.id,
-				code: uniqueId,
-			});
-
-			res.status(201).json({
-				url: accountLink.url,
-			});
-		}
-	} catch (error) {
-		return next(new AppError(error.message, 500));
-	}
+	const url = await PaymentService.createStripeAccount(req.user.id);
+	res.status(201).json({ status: 'success', url });
 });
 
 exports.activateAccount = asyncErrorHandler(async (req, res, next) => {
-	const { activeCode } = req.params;
-
-	try {
-		const userStripeInfo = await Payment.findOne({
-			code: activeCode,
-		});
-		if (userStripeInfo) {
-			await Seller.findByIdAndUpdate(req.user.id, {
-				payment: 'active',
-			});
-			res.status(201).json({
-				status: 'Payment Activated',
-			});
-		} else {
-			return next(new AppError(error.message, 400));
-		}
-	} catch (error) {
-		return next(new AppError(error.message, 500));
-	}
+	const activated = await PaymentService.activateStripeAccount(req.user.id, req.params.activeCode);
+	if (!activated) return next(new NotFoundError('Activation code not found'));
+	res.status(200).json({ status: 'Payment Activated' });
 });
 
 exports.getSellerPaymentDetails = asyncErrorHandler(async (req, res, next) => {
-	const { sellerId } = req.params;
-
-	try {
-		const payments = await SellerWallet.find({
-			sellerId,
-		});
-		const pendingWithdraws = await WithDrawal.find({
-			$and: [
-				{
-					sellerId: {
-						$eq: sellerId,
-					},
-				},
-				{
-					status: {
-						$eq: 'pending',
-					},
-				},
-			],
-		});
-
-		const successWithdraws = await WithDrawal.find({
-			$and: [
-				{
-					sellerId: {
-						$eq: sellerId,
-					},
-				},
-				{
-					status: {
-						$eq: 'success',
-					},
-				},
-			],
-		});
-
-		const pendingAmount = sumAmount(pendingWithdraws);
-		const withdrawAmount = sumAmount(successWithdraws);
-		const totalAmount = sumAmount(payments);
-
-		let availableAmount = 0;
-
-		if (totalAmount > 0) {
-			availableAmount = totalAmount - (pendingAmount + withdrawAmount);
-		}
-		res.status(201).json({
-			status: 'Payment Activated',
-			data: {
-				totalAmount,
-				pendingAmount,
-				withdrawAmount,
-				availableAmount,
-				pendingWithdraws,
-				successWithdraws,
-			},
-		});
-	} catch (error) {
-		return next(new AppError(error.message, 500));
-	}
+	const data = await PaymentService.getSellerPaymentDetails(req.params.sellerId);
+	res.status(200).json({ status: 'success', data });
 });
 
-exports.paymentRequest = asyncErrorHandler(async (req, res) => {
-	const { amount, sellerId } = req.body;
-
-	try {
-		const withdrawal = await WithDrawal.create({
-			sellerId,
-			amount: parseInt(amount),
-		});
-
-		res.status(201).json({
-			status: 'Successfully withdrawal',
-			data: {
-				withdrawal,
-			},
-		});
-	} catch (error) {
-		return next(new AppError(error.message, 500));
-	}
+exports.paymentRequest = asyncErrorHandler(async (req, res, next) => {
+	const withdrawal = await PaymentService.createWithdrawalRequest(req.user.id, req.body.amount);
+	res.status(201).json({ status: 'Withdrawal request created', data: withdrawal });
 });
 
 exports.getAdminPaymentRequest = asyncErrorHandler(async (req, res, next) => {
-	try {
-		const withdrawalRequest = await WithDrawal.find({
-			status: 'pending',
-		});
-		res.status(201).json({
-			status: 'Successfully withdrawal',
-			data: {
-				withdrawalRequest,
-			},
-		});
-	} catch (error) {
-		return next(new AppError(error.message, 500));
-	}
+	const requests = await PaymentService.getPendingAdminRequests();
+	res.status(200).json({ status: 'success', data: requests });
 });
 
 exports.adminConfirmPaymentRequest = asyncErrorHandler(async (req, res, next) => {
-	const { paymentId } = req.body;
-
-	try {
-		const payment = await WithDrawal.findById(paymentId);
-		const { stripeId } = await Payment.findOne({
-			sellerId: new ObjectId(payment.sellerId),
-		});
-
-		await stripe.transfers.create({
-			amount: payment.amount * 100,
-			currency: 'usd',
-			destination: stripeId,
-		});
-
-		await WithDrawal.findByIdAndUpdate(paymentId, {
-			status: 'success',
-		});
-		res.status(201).json({
-			status: 'Payment Confirmed',
-			data: {
-				payment,
-			},
-		});
-	} catch (error) {
-		return next(new AppError(error.message, 500));
-	}
+	const payment = await PaymentService.adminConfirmWithdrawal(req.body.paymentId);
+	if (!payment) return next(new NotFoundError('Payment not found'));
+	res.status(200).json({ status: 'Payment Confirmed', data: payment });
 });
