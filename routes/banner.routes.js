@@ -1,10 +1,36 @@
 const express = require('express');
-const bannerController = require('../controllers/bannerController');
+const bannerController = require('../controllers/banner.controller');
 const router = express.Router();
+const { protect } = require('../middleware/auth-check.middleware');
+const authorize = require('../middleware/role-check.middleware');
+const logger = require('../utils/logger');
+const validateRequest = require('../middleware/validate.middleware');
+const { createBannerSchema, updateBannerSchema } = require('../validations/banner.validation');
 
-router.get('/get-all-banners', bannerController.getAllBanners);
-router.post('/add-banner', bannerController.addBanner);
-router.get('/get-banner/:productId', bannerController.getBanner);
-router.patch('/get-banner/:productId', bannerController.updateBanner);
+logger.info('[banner.routes.js] Banner route is working');
+
+// GET all banners
+router.get('/', bannerController.getAllBanners);
+
+// POST create banner
+router.post(
+	'/',
+	protect,
+	authorize('ADMIN'),
+	validateRequest(createBannerSchema),
+	bannerController.createBanner,
+);
+
+// GET banner by productId
+router.get('/product/:productId', bannerController.getBannerByProductId);
+
+// PATCH update banner by bannerId
+router.patch(
+	'/:bannerId',
+	protect,
+	authorize('ADMIN'),
+	validateRequest(updateBannerSchema),
+	bannerController.updateBanner,
+);
 
 module.exports = router;

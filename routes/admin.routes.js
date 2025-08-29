@@ -8,7 +8,7 @@ logger.info('[admin.routes.js] Admin route is working');
 
 const router = express.Router();
 
-router.get('/admins/me', protect, authorize('admin'), adminController.getAdminProfile);
-router.get('/admins/dashboard', protect, authorize('admin'), adminController.getAdminDashboard);
+router.get('/admins/me', protect, authorize('ADMIN'), adminController.getAdminProfile);
+router.get('/admins/dashboard', protect, authorize('ADMIN'), adminController.getAdminDashboard);
 
 module.exports = router;

@@ -1,4 +1,4 @@
-### AdminController, AdminService and AdminRoutes
+### BannerController, BannerService and BannerRoutes
 
 Implemented all crud functionality with Joi validation, completed SwaggerUI docs
 
