@@ -1,39 +1,27 @@
-const Admin = require('../models/admin.model');
-// dashboard related
-const CustomerOrders = require('../models/customer-order.model');
-const MyWallet = require('../models/my-wallet.model');
-const catchAsync = require('../utils/asyncErrorHandler');
+const asyncErrorHandler = require('../utils/asyncErrorHandler');
+const adminService = require('../services/admin.service');
+const logger = require('../utils/logger');
 
-exports.getMeAdmin = catchAsync(async (req, res, next) => {
+exports.getAdminProfile = asyncErrorHandler(async (req, res) => {
 	const { _id } = req.user;
 
-	const admin = await Admin.findById(_id);
+	logger.info(`[AdminController] getAdminProfile called for adminId: ${_id}`);
+
+	const admin = await adminService.getProfile(_id);
+
 	res.status(200).json({
 		status: 'success',
-		data: {
-			admin,
-		},
+		data: { admin },
 	});
 });
 
-exports.getAdminDashboardInfo = catchAsync(async (req, res, next) => {
-	const totalSales = await MyWallet.aggregate([
-		{
-			$group: {
-				_id: null,
-				totalAmount: {
-					$sum: '$amount',
-				},
-			},
-		},
-	]);
-	const totalOrders = await CustomerOrders.find({}).countDocuments();
+exports.getAdminDashboard = asyncErrorHandler(async (req, res) => {
+	logger.info('[AdminController] getAdminDashboard called');
+
+	const dashboardData = await adminService.getDashboardStats();
 
 	res.status(200).json({
 		status: 'success',
-		data: {
-			totalSales: totalSales.length > 0 ? totalSales[0].totalAmount : 0,
-			totalOrders,
-		},
+		data: dashboardData,
 	});
 });

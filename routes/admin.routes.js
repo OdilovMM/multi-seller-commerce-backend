@@ -1,22 +1,14 @@
 const express = require('express');
-const authAdminController = require('../controllers/admin.controller');
+const adminController = require('../controllers/admin.controller');
+const { protect } = require('../middleware/auth-check.middleware');
+const authorize = require('../middleware/role-check.middleware');
+const logger = require('../utils/logger');
+
+logger.info('[admin.routes.js] Admin route is working');
+
 const router = express.Router();
 
-// router.post("/admin-register", authAdminController.signup);
-router.post('/admin-login', authAdminController.login);
-router.get('/logout', authAdminController.protect, authAdminController.logout);
-router.get(
-  '/get-admin-detail',
-  authAdminController.protect,
-  authAdminController.restrictTo('admin'),
-  authAdminController.getMeAdmin,
-);
-
-router.get(
-  '/get-admin-dashboard-info',
-  authAdminController.protect,
-  authAdminController.restrictTo('admin'),
-  authAdminController.getAdminDashboardInfo,
-);
+router.get('/admins/me', protect, authorize('admin'), adminController.getAdminProfile);
+router.get('/admins/dashboard', protect, authorize('admin'), adminController.getAdminDashboard);
 
 module.exports = router;

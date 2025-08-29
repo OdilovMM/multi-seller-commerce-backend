@@ -1,4 +1,4 @@
-### ReviewController, ReviewService and ReviewRoutes
+### AdminController, AdminService and AdminRoutes
 
 Implemented all crud functionality with Joi validation, completed SwaggerUI docs
 
