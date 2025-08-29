@@ -1,4 +1,4 @@
-### CustomerController, CustomerService and CustomerRoutes
+### SellerController, SellerService and SellerRoutes
 
 Implemented all crud functionality with Joi validation, completed SwaggerUI docs
 

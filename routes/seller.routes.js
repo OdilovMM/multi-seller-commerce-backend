@@ -1,77 +1,31 @@
 const express = require('express');
-const authAdminController = require('../controllers/admin.controller');
-const sellerController = require('../controllers/seller.controller');
-
 const router = express.Router();
+const sellerController = require('../controllers/seller.controller');
+const { protect } = require('../middleware/auth-check.middleware');
+const authorize = require('../middleware/role-check.middleware');
+const logger = require('../utils/logger');
+const validateRequest = require('../middleware/validate.middleware');
+const { updateSellerStatusSchema, addAddressSchema } = require('../validations/seller.validator');
+logger.info('[seller.routes.js] SELLER route is working');
 
-router.post('/seller-register', sellerController.sellerRegister);
-router.post('/seller-login', sellerController.sellerLogin);
-router.get(
-  '/seller-logout',
-  sellerController.protect,
-  sellerController.sellerLogout,
-);
-router.post(
-  '/seller-profile-image',
-  sellerController.protect,
-  sellerController.restrictTo('seller'),
-  sellerController.uploadSellerProfileImage,
-);
+// Seller protected routes
+router.use(protect, authorize('VENDOR'));
 
-router.post(
-  '/seller-add-address',
-  sellerController.protect,
-  sellerController.restrictTo('seller'),
-  sellerController.addSellerAddress,
-);
+router.post('/profile-image', sellerController.uploadProfileImage);
+router.patch('/address', validateRequest(addAddressSchema), sellerController.addAddress);
+router.get('/me', sellerController.getMe);
+router.get('/dashboard', sellerController.getDashboardInfo);
 
-router.get(
-  '/seller-activate-request',
-  authAdminController.protect,
-  authAdminController.restrictTo('admin'),
-  sellerController.getSellerRequestToActive,
-);
-router.get(
-  '/get-active-sellers',
-  authAdminController.protect,
-  authAdminController.restrictTo('admin'),
-  sellerController.getActiveSellers,
-);
-
-router.get(
-  '/get-de-active-sellers',
-  authAdminController.protect,
-  authAdminController.restrictTo('admin'),
-  sellerController.getDeActiveSellers,
-);
-
+// Admin routes
+router.use(protect, authorize('ADMIN'));
+router.get('/activate-request', sellerController.getSellersByStatus);
+router.get('/active', sellerController.getSellersByStatus);
+router.get('/deactive', sellerController.getSellersByStatus);
 router.patch(
-  '/update-seller-status',
-  authAdminController.protect,
-  authAdminController.restrictTo('admin'),
-  sellerController.updateSellerStatus,
+	'/status',
+	validateRequest(updateSellerStatusSchema),
+	sellerController.updateSellerStatus,
 );
-router.get(
-  '/get-me-detail',
-  sellerController.protect,
-  sellerController.restrictTo('seller'),
-  sellerController.getMeSeller,
-);
-
-router.get('/get-seller-detail/:sellerId', sellerController.getSellerDetail);
-
-router.patch(
-  '/upload-seller-profile-image',
-  sellerController.protect,
-  sellerController.uploadSellerProfilePhoto,
-);
-
-router.get(
-  '/get-seller-dashboard-info',
-  sellerController.protect,
-  sellerController.getSellerDashboardInfo,
-);
-
-// router.get("/logout", authController.logout);
+router.get('/:sellerId', sellerController.getSellerById);
 
 module.exports = router;
