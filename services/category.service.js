@@ -45,52 +45,68 @@ class CategoryService {
 	}
 
 	async getCategories({ page, parPage, search }) {
-		let skipPage = 0;
-		if (parPage && page) skipPage = parseInt(parPage) * (parseInt(page) - 1);
+		try {
+			let skipPage = 0;
+			if (parPage && page) skipPage = parseInt(parPage) * (parseInt(page) - 1);
 
-		const filter = search ? { $text: { $search: search } } : {};
+			const filter = search ? { $text: { $search: search } } : {};
 
-		const categories = await this.categoryModel
-			.find(filter)
-			.skip(skipPage)
-			.limit(parPage ? parseInt(parPage) : 0)
-			.sort({ createdAt: -1 });
+			const categories = await this.categoryModel
+				.find(filter)
+				.skip(skipPage)
+				.limit(parPage ? parseInt(parPage) : 0)
+				.sort({ createdAt: -1 });
 
-		const totalCategories = await this.categoryModel.countDocuments(filter);
+			const totalCategories = await this.categoryModel.countDocuments(filter);
 
-		return { categories, totalCategories };
+			return { categories, totalCategories };
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	async getCategoryById(id) {
-		const category = await this.categoryModel.findById(id);
-		if (!category) {
-			logger.warn({ id: id }, 'Category not found');
-			throw new NotFoundError('No category found with that ID');
+		try {
+			const category = await this.categoryModel.findById(id);
+			if (!category) {
+				logger.warn({ id: id }, 'Category not found');
+				throw new NotFoundError('No category found with that ID');
+			}
+			return category;
+		} catch (error) {
+			console.log(error);
 		}
-		return category;
 	}
 
 	async deleteCategory(id) {
-		const category = await this.categoryModel.findByIdAndDelete(id);
-		if (!category) {
-			logger.warn({ id: id }, 'Category not found for deletion');
-			throw new NotFoundError('No category found with that ID');
+		try {
+			const category = await this.categoryModel.findByIdAndDelete(id);
+			if (!category) {
+				logger.warn({ id: id }, 'Category not found for deletion');
+				throw new NotFoundError('No category found with that ID');
+			}
+			logger.info({ categoryId: id }, 'Category deleted successfully');
+			return category._id;
+		} catch (error) {
+			console.log(error);
 		}
-		logger.info({ categoryId: id }, 'Category deleted successfully');
-		return category._id;
 	}
 
 	async updateCategory(id, data) {
-		const category = await this.categoryModel.findByIdAndUpdate(id, data, {
-			new: true,
-			runValidators: true,
-		});
-		if (!category) {
-			logger.warn({ id: id }, 'Category not found for update');
-			throw new NotFoundError('No category found with that ID');
+		try {
+			const category = await this.categoryModel.findByIdAndUpdate(id, data, {
+				new: true,
+				runValidators: true,
+			});
+			if (!category) {
+				logger.warn({ id: id }, 'Category not found for update');
+				throw new NotFoundError('No category found with that ID');
+			}
+			logger.info({ categoryId: id }, 'Category updated successfully');
+			return category;
+		} catch (error) {
+			console.log(error);
 		}
-		logger.info({ categoryId: id }, 'Category updated successfully');
-		return category;
 	}
 }
 

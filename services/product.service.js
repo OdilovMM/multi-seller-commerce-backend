@@ -15,8 +15,12 @@ class ProductService {
 	}
 
 	async listAll() {
-		logger.info('[ProductService] listAll called');
-		return await Product.find();
+		try {
+			logger.info('[ProductService] listAll called');
+			return await Product.find();
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	async create({
@@ -84,29 +88,36 @@ class ProductService {
 			throw new NotFoundError('Product not found');
 		}
 
-		const categoryRelated = await Product.find({
-			_id: { $ne: product._id },
-			category: product.category,
-		}).limit(20);
-		const sellerRelated = await Product.find({
-			_id: { $ne: product._id },
-			sellerId: product.sellerId,
-		}).limit(5);
+		try {
+			const categoryRelated = await Product.find({
+				_id: { $ne: product._id },
+				category: product.category,
+			}).limit(20);
+			const sellerRelated = await Product.find({
+				_id: { $ne: product._id },
+				sellerId: product.sellerId,
+			}).limit(5);
 
-		logger.info(`[ProductService] getBySlug success for slug: ${slug}`);
+			logger.info(`[ProductService] getBySlug success for slug: ${slug}`);
 
-		return { product, categoryRelated, sellerRelated };
+			return { product, categoryRelated, sellerRelated };
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	async getById(productId) {
 		logger.info(`[ProductService] getById called for ID: ${productId}`);
 
 		const product = await Product.findById(productId);
-		if (!product) {
-			logger.error(`[ProductService] Product not found with ID: ${productId}`);
-			throw new NotFoundError('Product not found');
+		try {
+			if (!product) {
+				logger.error(`[ProductService] Product not found with ID: ${productId}`);
+				throw new NotFoundError('Product not found');
+			}
+		} catch (error) {
+			console.log(error);
 		}
-
 		return product;
 	}
 
@@ -115,33 +126,42 @@ class ProductService {
 		const trimmedName = name?.trim();
 		const slug = trimmedName.split(' ').join('-');
 
-		await Product.findByIdAndUpdate(
-			productId,
-			{ name: trimmedName, description, discount, price, brand, stock, slug },
-			{ new: true, runValidators: true },
-		);
-		if (!product) {
-			logger.error(`[ProductService] Product not found with ID: ${productId}`);
-			throw new NotFoundError('Product not found');
-		}
+		try {
+			await Product.findByIdAndUpdate(
+				productId,
+				{ name: trimmedName, description, discount, price, brand, stock, slug },
+				{ new: true, runValidators: true },
+			);
+			if (!product) {
+				logger.error(`[ProductService] Product not found with ID: ${productId}`);
+				throw new NotFoundError('Product not found');
+			}
 
-		logger.info(`[ProductService] Product updated successfully: ${productId}`);
-		return await Product.findById(productId);
+			logger.info(`[ProductService] Product updated successfully: ${productId}`);
+			return await Product.findById(productId);
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	async updateImage(productId, oldImage, newImage) {
 		logger.info(`[ProductService] updateImage called for productId: ${productId}`);
-		const result = await cloudinary.uploader.upload(newImage.filepath, { folder: 'products' });
-		let { images } = await Product.findById(productId);
-		const index = images.findIndex((img) => img === oldImage);
-		if (index === -1) {
-			logger.error(`[ProductService] Old image not found for productId: ${productId}`);
-			throw new NotFoundError('Old image not found in product');
+
+		try {
+			const result = await cloudinary.uploader.upload(newImage.filepath, { folder: 'products' });
+			let { images } = await Product.findById(productId);
+			const index = images.findIndex((img) => img === oldImage);
+			if (index === -1) {
+				logger.error(`[ProductService] Old image not found for productId: ${productId}`);
+				throw new NotFoundError('Old image not found in product');
+			}
+			images[index] = result.url;
+			await Product.findByIdAndUpdate(productId, { images });
+			logger.info(`[ProductService] Product image updated: ${productId}`);
+			return await Product.findById(productId);
+		} catch (error) {
+			console.log(error);
 		}
-		images[index] = result.url;
-		await Product.findByIdAndUpdate(productId, { images });
-		logger.info(`[ProductService] Product image updated: ${productId}`);
-		return await Product.findById(productId);
 	}
 
 	async delete(sellerId, productId) {
@@ -149,30 +169,39 @@ class ProductService {
 			`[ProductService] delete called for productId: ${productId}, sellerId: ${sellerId}`,
 		);
 
-		const product = await Product.findOneAndDelete({ sellerId, _id: productId });
-		if (!product) {
-			logger.error(`[ProductService] Product not found for delete: ${productId}`);
-			throw new NotFoundError('Product not found or not authorized to delete');
-		}
+		try {
+			const product = await Product.findOneAndDelete({ sellerId, _id: productId });
+			if (!product) {
+				logger.error(`[ProductService] Product not found for delete: ${productId}`);
+				throw new NotFoundError('Product not found or not authorized to delete');
+			}
 
-		logger.info(`[ProductService] Product deleted successfully: ${productId}`);
-		return product;
+			logger.info(`[ProductService] Product deleted successfully: ${productId}`);
+			return product;
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	async listByType(type) {
 		logger.info(`[ProductService] listByType called with type: ${type}`);
 
 		let products = [];
-		if (type === 'top-rated') {
-			products = await Product.find().sort({ rating: -1 });
-		} else if (type === 'new-arrivals') {
-			products = await Product.find().sort({ createdAt: -1 });
-		} else {
-			logger.error(`[ProductService] Invalid type: ${type}`);
-			throw new BadRequestError('Invalid product type');
-		}
 
-		return products;
+		try {
+			if (type === 'top-rated') {
+				products = await Product.find().sort({ rating: -1 });
+			} else if (type === 'new-arrivals') {
+				products = await Product.find().sort({ createdAt: -1 });
+			} else {
+				logger.error(`[ProductService] Invalid type: ${type}`);
+				throw new BadRequestError('Invalid product type');
+			}
+
+			return products;
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	async listByPriceRange() {
@@ -182,27 +211,35 @@ class ProductService {
 		const getPriceProduct = await Product.find({}).sort({ price: 1 });
 
 		let priceRange = { low: 0, high: 0 };
-		if (getPriceProduct.length > 0) {
-			priceRange.high = getPriceProduct[getPriceProduct.length - 1].price;
-			priceRange.low = getPriceProduct[0].price;
-		}
 
-		const formatted = [];
-		for (let i = 0; i < products.length; i += 3) {
-			formatted.push(products.slice(i, i + 3));
-		}
+		try {
+			if (getPriceProduct.length > 0) {
+				priceRange.high = getPriceProduct[getPriceProduct.length - 1].price;
+				priceRange.low = getPriceProduct[0].price;
+			}
 
-		logger.info('[ProductService] listByPriceRange success');
-		return { latestProduct: formatted, priceRange };
+			const formatted = [];
+			for (let i = 0; i < products.length; i += 3) {
+				formatted.push(products.slice(i, i + 3));
+			}
+
+			logger.info('[ProductService] listByPriceRange success');
+			return { latestProduct: formatted, priceRange };
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	async listHomeProducts() {
 		logger.info('[ProductService] listHomeProducts called');
 
-		const topRated = await Product.find().sort({ rating: -1 }).limit(16);
-		const newArrivals = await Product.find().sort({ createdAt: -1 }).limit(16);
-
-		return { topRatedProducts: topRated, newArrivals };
+		try {
+			const topRated = await Product.find().sort({ rating: -1 }).limit(16);
+			const newArrivals = await Product.find().sort({ createdAt: -1 }).limit(16);
+			return { topRatedProducts: topRated, newArrivals };
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	async search(reqQuery) {
@@ -210,45 +247,54 @@ class ProductService {
 		const parPage = 16;
 		reqQuery.parPage = parPage;
 
-		const products = await Product.find({}).sort({ createdAt: -1 });
+		try {
+			const products = await Product.find({}).sort({ createdAt: -1 });
 
-		const totalProducts = new queryProducts(products, reqQuery)
-			.queryCategory()
-			.queryRating()
-			.queryPrice()
-			.querySearch()
-			.querySortPrice()
-			.getProductsCount();
+			const totalProducts = new queryProducts(products, reqQuery)
+				.queryCategory()
+				.queryRating()
+				.queryPrice()
+				.querySearch()
+				.querySortPrice()
+				.getProductsCount();
 
-		const result = new queryProducts(products, reqQuery)
-			.queryCategory()
-			.queryRating()
-			.queryPrice()
-			.querySearch()
-			.querySortPrice()
-			.paginate()
-			.limitField()
-			.getProducts();
+			const result = new queryProducts(products, reqQuery)
+				.queryCategory()
+				.queryRating()
+				.queryPrice()
+				.querySearch()
+				.querySortPrice()
+				.paginate()
+				.limitField()
+				.getProducts();
 
-		logger.info('[ProductService] search completed');
-		return { products: result, totalProducts, parPage };
+			logger.info('[ProductService] search completed');
+			return { products: result, totalProducts, parPage };
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	async listSellerProducts(sellerId, page = 1, parPage = 10, search = '') {
 		logger.info(`[ProductService] listSellerProducts called for sellerId: ${sellerId}`);
 		const skipPage = parseInt(parPage) * (parseInt(page) - 1);
 		const query = sellerId ? { sellerId } : {};
-		if (search) query.$text = { $search: search };
 
-		const products = await Product.find(query)
-			.skip(skipPage)
-			.limit(parseInt(parPage))
-			.sort({ createdAt: -1 });
-		const totalProducts = await Product.find(query).countDocuments();
+		try {
+			if (search) query.$text = { $search: search };
 
-		logger.info(`[ProductService] listSellerProducts success for sellerId: ${sellerId}`);
+			const products = await Product.find(query)
+				.skip(skipPage)
+				.limit(parseInt(parPage))
+				.sort({ createdAt: -1 });
+			const totalProducts = await Product.find(query).countDocuments();
 
-		return { products, totalProducts };
+			logger.info(`[ProductService] listSellerProducts success for sellerId: ${sellerId}`);
+
+			return { products, totalProducts };
+		} catch (error) {
+			console.log(error);
+		}
 	}
 }
 

@@ -111,13 +111,17 @@ class CustomerService {
 		const product = await Product.findById(productId);
 		if (!product) throw new NotFoundError('Product not found');
 
-		const savedWishlist = await Wishlist.findOne({ productId, userId });
-		if (savedWishlist) {
-			await Wishlist.findByIdAndDelete(savedWishlist._id);
-			return { savedWishlist, isSaved: false };
-		} else {
-			const newWishlist = await Wishlist.create({ userId, productId });
-			return { savedWishlist: newWishlist, isSaved: true };
+		try {
+			const savedWishlist = await Wishlist.findOne({ productId, userId });
+			if (savedWishlist) {
+				await Wishlist.findByIdAndDelete(savedWishlist._id);
+				return { savedWishlist, isSaved: false };
+			} else {
+				const newWishlist = await Wishlist.create({ userId, productId });
+				return { savedWishlist: newWishlist, isSaved: true };
+			}
+		} catch (error) {
+			console.log(error);
 		}
 	}
 
@@ -127,38 +131,55 @@ class CustomerService {
 		if (!product) throw new NotFoundError('Product not found');
 
 		const savedCart = await Cart.findOne({ productId, userId });
-		if (savedCart) {
-			await Cart.findByIdAndDelete(savedCart._id);
-			return { savedCart, isSaved: false };
-		} else {
-			const newCart = await Cart.create({ userId, productId, quantity });
-			return { savedCart: newCart, isSaved: true };
+
+		try {
+			if (savedCart) {
+				await Cart.findByIdAndDelete(savedCart._id);
+				return { savedCart, isSaved: false };
+			} else {
+				const newCart = await Cart.create({ userId, productId, quantity });
+				return { savedCart: newCart, isSaved: true };
+			}
+		} catch (error) {
+			console.log(error);
 		}
 	}
 
 	async incrementCartItem(userId, productId) {
-		const cartItem = await Cart.findOne({ userId, productId });
-		if (!cartItem) throw new NotFoundError('Cart item not found');
-		cartItem.quantity += 1;
-		await cartItem.save();
-		return cartItem;
+		try {
+			const cartItem = await Cart.findOne({ userId, productId });
+			if (!cartItem) throw new NotFoundError('Cart item not found');
+			cartItem.quantity += 1;
+			await cartItem.save();
+			return cartItem;
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	async decrementCartItem(userId, productId) {
-		const cartItem = await Cart.findOne({ userId, productId });
-		if (!cartItem) throw new NotFoundError('Cart item not found');
-		if (cartItem.quantity <= 1) throw new Error('Quantity cannot be less than 1');
-		cartItem.quantity -= 1;
-		await cartItem.save();
-		return cartItem;
+		try {
+			const cartItem = await Cart.findOne({ userId, productId });
+			if (!cartItem) throw new NotFoundError('Cart item not found');
+			if (cartItem.quantity <= 1) throw new Error('Quantity cannot be less than 1');
+			cartItem.quantity -= 1;
+			await cartItem.save();
+			return cartItem;
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	async getAllCustomersStats() {
-		const customers = await Customer.find({});
-		const countCustomer = await Customer.countDocuments();
-		const countSeller = await Seller.countDocuments();
-		const countCategory = await Category.countDocuments();
-		return { customers, countCustomer, countSeller, countCategory };
+		try {
+			const customers = await Customer.find({});
+			const countCustomer = await Customer.countDocuments();
+			const countSeller = await Seller.countDocuments();
+			const countCategory = await Category.countDocuments();
+			return { customers, countCustomer, countSeller, countCategory };
+		} catch (error) {
+			console.log(error);
+		}
 	}
 }
 

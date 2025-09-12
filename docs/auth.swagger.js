@@ -38,7 +38,7 @@
  *         password:
  *           type: string
  *
- * /api/v2/auth/register:
+ * /auth/register:
  *   post:
  *     summary: Register a new user
  *     tags: [Auth]

@@ -16,10 +16,43 @@ const notFoundMiddleware = require('./middleware/not-found-route');
 const errorHandlerMiddleware = require('./middleware/error-handler');
 const connectDB = require('./db/connect');
 const swaggerDocs = require('./utils/swagger');
-const httpLogger = pinoHttp({ logger });
+
 logger.info('[App.js]: Application started');
 
 const app = express();
+const httpLogger = pinoHttp({
+	logger,
+	// Request kelganida
+	customReceivedMessage: (req) => `Incoming request: ${req.method} ${req.url}`,
+	// Success bo‘lganda
+	customSuccessMessage: (res) => `Request completed with status ${res.statusCode}`,
+	// Error bo‘lganda
+	customErrorMessage: (error, res) => {
+		return `Request error with status ${res.statusCode}: ${error.message}`;
+	},
+	// Qaysi log level ishlatilishini o‘zingiz belgilang
+	customLogLevel: function (res, err) {
+		if (res.statusCode >= 400 && res.statusCode < 500) return 'warn';
+		if (res.statusCode >= 500 || err) return 'error';
+		return 'info';
+	},
+	// Req/Res ma’lumotlarini ham ko‘rsatish
+	serializers: {
+		req(req) {
+			return {
+				method: req.method,
+				url: req.url,
+				body: req.body,
+				query: req.query,
+			};
+		},
+		res(res) {
+			return {
+				statusCode: res.statusCode,
+			};
+		},
+	},
+});
 
 app.use(httpLogger);
 swaggerDocs(app);
@@ -32,7 +65,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 const limiter = rateLimit({
-	max: 10000,
+	max: 10,
 	windowMs: 60 * 60 * 1000,
 	message: 'Too many requests from this IP, please try again in an hour!',
 });
@@ -45,7 +78,7 @@ app.use(cookieParser());
 
 app.use(
 	cors({
-		origin: ['http://localhost:5173'],
+		origin: [process.env.CLIENT_URL],
 		credentials: true,
 	}),
 );

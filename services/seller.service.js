@@ -44,30 +44,44 @@ class SellerService {
 
 	async getSellerById(sellerId) {
 		const seller = await Seller.findById(sellerId);
-		if (!seller) {
-			logger.warn(`[SellerService] Seller not found: ${sellerId}`);
-			throw new NotFoundError('Seller not found');
+
+		try {
+			if (!seller) {
+				logger.warn(`[SellerService] Seller not found: ${sellerId}`);
+				throw new NotFoundError('Seller not found');
+			}
+			return seller;
+		} catch (error) {
+			console.log(error);
 		}
-		return seller;
 	}
 
 	async getSellersByStatus(status, page = 1, perPage = 10, search) {
 		const skip = perPage * (page - 1);
 		const query = { status };
-		if (search) query.$text = { $search: search };
 
-		const sellers = await Seller.find(query).skip(skip).limit(perPage).sort({ createdAt: -1 });
-		const total = await Seller.countDocuments(query);
-		logger.info(`[SellerService] Retrieved sellers with status: ${status}`);
-		return { sellers, total };
+		try {
+			if (search) query.$text = { $search: search };
+
+			const sellers = await Seller.find(query).skip(skip).limit(perPage).sort({ createdAt: -1 });
+			const total = await Seller.countDocuments(query);
+			logger.info(`[SellerService] Retrieved sellers with status: ${status}`);
+			return { sellers, total };
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	async updateSellerStatus(sellerId, status) {
-		await Seller.findByIdAndUpdate(sellerId, { status });
-		const seller = await Seller.findById(sellerId);
-		if (!seller) throw new NotFoundError('Seller not found');
-		logger.info(`[SellerService] Seller status updated: ${sellerId} -> ${status}`);
-		return seller;
+		try {
+			await Seller.findByIdAndUpdate(sellerId, { status });
+			const seller = await Seller.findById(sellerId);
+			if (!seller) throw new NotFoundError('Seller not found');
+			logger.info(`[SellerService] Seller status updated: ${sellerId} -> ${status}`);
+			return seller;
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	async getSellerDashboardInfo(userId) {
@@ -100,9 +114,13 @@ class SellerService {
 	}
 
 	async getMe(userId) {
-		const seller = await Seller.findById(userId);
-		if (!seller) throw new NotFoundError('Seller not found');
-		return seller;
+		try {
+			const seller = await Seller.findById(userId);
+			if (!seller) throw new NotFoundError('Seller not found');
+			return seller;
+		} catch (error) {
+			console.log(error);
+		}
 	}
 }
 

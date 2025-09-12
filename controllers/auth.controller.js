@@ -5,19 +5,34 @@ const logger = require('../utils/logger');
 // POST /api/auth/register
 exports.register = asyncErrorHandler(async (req, res) => {
 	const { email } = req.body; // req.body dan olindi
-	await authService.registerData(req.body, res);
+	const userData = await authService.registerData(req.body, res);
 	logger.info({ email }, 'User registered successfully');
+
+	res.status(201).json({
+		status: 'success',
+		data: { userData },
+	});
 });
 
 // POST /api/auth/login
 exports.login = asyncErrorHandler(async (req, res) => {
 	const { email } = req.body;
-	await authService.loginData(req.body, res);
+	const userData = await authService.loginData(req.body, res);
 	logger.info({ email }, 'User logged in successfully');
+
+	res.status(201).json({
+		status: 'success',
+		data: { userData },
+	});
 });
 
 // GET /api/auth/logout
 exports.logout = asyncErrorHandler(async (req, res) => {
-	await authService.logout(res);
 	logger.info('User logged out successfully');
+	await authService.logout(res);
+
+	res.status(201).json({
+		status: 'success',
+		message: 'Logged out successfully',
+	});
 });
